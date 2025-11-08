@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Resultado | <%= procedure.name %> em <%= city.name %> - Acesso Cirurgia
+    </title>
+    <meta
+      name="description"
+      content="Valor estimado para <%= procedure.name %> em <%= city.name %> com parceiros selecionados."
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="hero hero-small">
+      <div class="container">
+        <h1><%= procedure.name %></h1>
+        <p>
+          Resultado da busca para <strong><%= city.name %> - <%= city.state %></strong> e especialidade
+          <strong><%= specialty.name %></strong>.
+        </p>
+      </div>
+    </header>
+
+    <main class="container result">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <span><%= city.name %></span>
+        <span>/</span>
+        <span><%= specialty.name %></span>
+        <span>/</span>
+        <span><%= procedure.name %></span>
+      </nav>
+
+      <section class="price-card">
+        <h2>Preço Total Estimado</h2>
+        <p class="price-highlight"><%= price.estimatedValueLabel %></p>
+        <p class="price-note"><%= price.observations %></p>
+        <% if (primaryPartner) { %>
+        <a
+          class="primary-button"
+          href="https://wa.me/55<%= primaryPartner.whatsapp %>"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Falar com Especialista (WhatsApp)
+        </a>
+        <% } else { %>
+        <a class="primary-button" href="https://wa.me/5511999999999" target="_blank" rel="noreferrer">
+          Falar com Especialista (WhatsApp)
+        </a>
+        <% } %>
+        <a class="link-button" href="/" aria-label="Refazer busca">Refazer busca</a>
+      </section>
+
+      <section class="partners">
+        <h2>Médicos e Clínicas Parceiras</h2>
+        <% if (partners.length === 0) { %>
+        <p>
+          Ainda não temos parceiros cadastrados para esta combinação. Deixe seus dados pelo WhatsApp e
+          entraremos em contato rapidamente.
+        </p>
+        <a class="primary-button" href="https://wa.me/5511999999999" target="_blank" rel="noreferrer">
+          Falar com Especialista (WhatsApp)
+        </a>
+        <% } else { %>
+        <ul class="partners-list">
+          <% partners.forEach((partner) => { %>
+          <li class="partner-card">
+            <h3><%= partner.name %></h3>
+            <p class="partner-city"><%= city.name %> - <%= city.state %></p>
+            <a
+              class="primary-button"
+              href="https://wa.me/55<%= partner.whatsapp %>"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Falar com Especialista (WhatsApp)
+            </a>
+          </li>
+          <% }) %>
+        </ul>
+        <% } %>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; <%= new Date().getFullYear() %> Acesso Cirurgia. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+  </body>
+</html>
