@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acesso Cirurgia | Agilidade na Cirurgia Eletiva</title>
+    <meta
+      name="description"
+      content="Acesso Cirurgia conecta pacientes da fila do SUS a cirurgias eletivas com médicos privados, oferecendo preço transparente e atendimento rápido."
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <h1>Acesso Cirurgia</h1>
+        <p>
+          Conectamos você a especialistas para sair da <strong>fila do SUS</strong> e realizar sua
+          <strong>cirurgia eletiva</strong> com rapidez, transparência e segurança. Tenha acesso a um
+          preço justo e acelere sua jornada de cuidado.
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="wizard">
+        <h2>Encontre seu Procedimento</h2>
+        <p class="wizard-description">
+          Em poucos passos você visualiza o valor estimado e o parceiro ideal para sua cirurgia.
+        </p>
+        <form id="wizard-form">
+          <div class="wizard-steps">
+            <div class="wizard-step" data-step="1">
+              <div class="step-header">
+                <span class="step-number">1</span>
+                <h3>Onde você está?</h3>
+              </div>
+              <label for="cidade">Selecione a cidade</label>
+              <select id="cidade" name="cidade" required>
+                <option value="">Selecione</option>
+                <% cities.forEach((city) => { %>
+                <option value="<%= city.id %>" data-slug="<%= city.slug %>">
+                  <%= city.name %> - <%= city.state %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="wizard-step" data-step="2">
+              <div class="step-header">
+                <span class="step-number">2</span>
+                <h3>Qual a especialidade?</h3>
+              </div>
+              <label for="especialidade">Selecione a especialidade médica</label>
+              <select id="especialidade" name="especialidade" required disabled>
+                <option value="">Selecione</option>
+                <% specialties.forEach((specialty) => { %>
+                <option value="<%= specialty.id %>" data-slug="<%= specialty.slug %>">
+                  <%= specialty.name %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="wizard-step" data-step="3">
+              <div class="step-header">
+                <span class="step-number">3</span>
+                <h3>Qual a cirurgia?</h3>
+              </div>
+              <label for="procedimento">Selecione o procedimento específico</label>
+              <select id="procedimento" name="procedimento" required disabled>
+                <option value="">Selecione</option>
+              </select>
+              <p class="input-feedback" id="procedures-feedback"></p>
+            </div>
+          </div>
+
+          <button type="submit" class="primary-button" disabled>Ver resultado</button>
+        </form>
+      </section>
+
+      <section class="seo-text">
+        <h2>Sua cirurgia eletiva com acesso rápido</h2>
+        <p>
+          No Acesso Cirurgia você encontra especialistas verificados e hospitais qualificados para
+          antecipar seu procedimento com transparência total nos custos. Nosso wizard cruza cidade,
+          especialidade e cirurgia para apresentar o <strong>valor estimado</strong> e conectar você ao
+          parceiro ideal via WhatsApp.
+        </p>
+        <p>
+          Se você está aguardando na <strong>fila do SUS</strong>, oferecemos uma alternativa ágil para
+          realizar sua cirurgia com um preço negociado e acompanhamento humano em todas as etapas.
+          Diga adeus à espera e acelere a conquista do seu bem-estar.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; <%= new Date().getFullYear() %> Acesso Cirurgia. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+
+    <script>
+      window.__WIZARD_DATA__ = {
+        cities: <%- JSON.stringify(cities) %>,
+        specialties: <%- JSON.stringify(specialties) %>,
+      };
+    </script>
+    <script src="/js/wizard.js"></script>
+  </body>
+</html>
