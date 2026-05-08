@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
               versao: body.consentimentoLgpd.versao,
               ipHash: crypto
                 .createHash("sha256")
-                .update(request.ip ?? request.headers.get("x-forwarded-for") ?? "no-ip")
+                .update(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "no-ip")
                 .digest("hex"),
             },
             encryptedPayload: body.encryptedPayload,

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 const CONSENT_VERSION = "1.0";
 const CONSENT_STORAGE_KEY = "asc-lgpd-consent";
@@ -15,23 +15,6 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(undefined)
 
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const [hasConsent, setHasConsent] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as { accepted: boolean; version: string };
-        if (parsed.accepted && parsed.version === CONSENT_VERSION) {
-          setHasConsent(true);
-        }
-      } catch {
-        localStorage.removeItem(CONSENT_STORAGE_KEY);
-      }
-    }
-
-    setHydrated(true);
-  }, []);
 
   const value = useMemo(
     () => ({
@@ -55,7 +38,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   return (
     <ConsentContext.Provider value={value}>
       {children}
-      {hydrated && !hasConsent ? <ConsentModal onAccept={value.acceptConsent} /> : null}
+      {!hasConsent ? <ConsentModal onAccept={value.acceptConsent} /> : null}
     </ConsentContext.Provider>
   );
 }
