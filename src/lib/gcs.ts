@@ -65,3 +65,24 @@ export async function createDownloadSignedUrl(objectPath: string, expiresInMinut
 
   return signedUrl;
 }
+
+export async function uploadEncryptedObject(params: {
+  objectPath: string;
+  buffer: Buffer;
+  contentType?: string;
+}) {
+  const bucket = getStorageClient().bucket(getBucketName());
+  const file = bucket.file(params.objectPath);
+
+  await file.save(params.buffer, {
+    resumable: false,
+    contentType: params.contentType ?? "application/octet-stream",
+    metadata: {
+      cacheControl: "private, max-age=0, no-store",
+    },
+  });
+
+  return {
+    objectPath: params.objectPath,
+  };
+}

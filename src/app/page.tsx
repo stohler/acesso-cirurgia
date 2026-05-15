@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { HomeSearchForm } from "@/components/forms/home-search-form";
+import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { PriceDisclaimer } from "@/components/seo/price-disclaimer";
 import { DEFAULT_PRICE_ESTIMATES } from "@/lib/constants";
 import { getCatalogData } from "@/lib/catalog-service";
@@ -25,7 +26,6 @@ export default async function Home() {
       <section className="hero overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="grid gap-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-cyan-100">Acesso Cirurgia • Simulação guiada</p>
             <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white sm:text-4xl">
               Recupere sua saúde e qualidade de vida sem esperar anos na fila do SUS.
             </h1>
@@ -138,6 +138,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <TestimonialsCarousel />
+
       <section className="card grid gap-5 p-6">
         <h2 className="text-2xl font-semibold">Seus dados protegidos, sua saúde em boas mãos.</h2>
         <div className="grid gap-5 lg:grid-cols-[1fr_0.95fr]">
@@ -189,7 +191,8 @@ export default async function Home() {
               Como são feitos os pagamentos?
             </h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Oferecemos opções de parcelamento para que o valor não poise no seu orçamento mensal.
+              Os pagamentos são combinados diretamente com a equipe, temos parceria com a Sicredi para orçamento de
+              crédito para cirurgias.
             </p>
           </article>
           <article className="card p-4">
