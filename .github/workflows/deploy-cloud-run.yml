@@ -1,0 +1,87 @@
+name: CI e Deploy Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+  AR_REPOSITORY: ${{ vars.AR_REPOSITORY }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.AR_REPOSITORY }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ vars.CLOUD_RUN_SERVICE }}" \
+            --image "$IMAGE" \
+            --region "${{ vars.GCP_REGION }}" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --set-env-vars "NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_APP_URL }}" \
+            --set-env-vars "NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM=${{ vars.NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM }}" \
+            --set-env-vars "MONGODB_DB_NAME=${{ vars.MONGODB_DB_NAME }}" \
+            --set-env-vars "GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
+            --set-env-vars "GCS_BUCKET_NAME=${{ vars.GCS_BUCKET_NAME }}" \
+            --set-env-vars "BOOTSTRAP_DOCTOR_NOME=${{ vars.BOOTSTRAP_DOCTOR_NOME }}" \
+            --set-env-vars "BOOTSTRAP_DOCTOR_EMAIL=${{ vars.BOOTSTRAP_DOCTOR_EMAIL }}" \
+            --set-env-vars "BOOTSTRAP_DOCTOR_PASSWORD=${{ secrets.BOOTSTRAP_DOCTOR_PASSWORD }}" \
+            --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}" \
+            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}"
