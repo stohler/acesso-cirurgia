@@ -127,3 +127,18 @@ textarea:focus {
   outline: 2px solid transparent;
   border-color: var(--color-primary-blue-light);
 }
+
+@keyframes step-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step-in {
+  animation: step-in 0.28s ease-out;
+}
