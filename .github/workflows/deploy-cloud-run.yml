@@ -77,6 +77,7 @@ jobs:
             --port 8080 \
             --set-env-vars "NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_APP_URL }}" \
             --set-env-vars "NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM=${{ vars.NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM }}" \
+            --set-env-vars "TRIAGE_RSA_PUBLIC_KEY_PEM_BASE64=${{ vars.TRIAGE_RSA_PUBLIC_KEY_PEM_BASE64 }}" \
             --set-env-vars "MONGODB_DB_NAME=${{ vars.MONGODB_DB_NAME }}" \
             --set-env-vars "GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
             --set-env-vars "GCS_BUCKET_NAME=${{ vars.GCS_BUCKET_NAME }}" \

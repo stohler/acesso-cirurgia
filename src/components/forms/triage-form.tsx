@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useConsent } from "@/components/consent/consent-provider";
 import { encryptTriagePayload } from "@/lib/client-crypto";
@@ -12,10 +12,11 @@ type TriageFormProps = {
   cities: CityCatalog[];
 };
 
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM;
-
 export function TriageForm({ specialties, procedures, cities }: TriageFormProps) {
   const { hasConsent, consentVersion } = useConsent();
+  const [publicKeyPem, setPublicKeyPem] = useState("");
+  const [publicKeyLoaded, setPublicKeyLoaded] = useState(false);
+  const [publicKeyError, setPublicKeyError] = useState("");
 
   const [especialidade, setEspecialidade] = useState(specialties[0]?.slug ?? "cirurgia-geral");
   const [procedimento, setProcedimento] = useState("");
@@ -28,6 +29,32 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
   const [status, setStatus] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    async function loadPublicKey() {
+      try {
+        const response = await fetch("/api/public-config", { cache: "no-store" });
+        const payload = (await response.json()) as {
+          configured: boolean;
+          publicKeyPem?: string;
+          error?: string;
+        };
+
+        if (!response.ok || !payload.publicKeyPem) {
+          setPublicKeyError(payload.error ?? "Falha ao carregar chave pública da triagem.");
+          return;
+        }
+
+        setPublicKeyPem(payload.publicKeyPem);
+      } catch {
+        setPublicKeyError("Falha ao carregar chave pública da triagem.");
+      } finally {
+        setPublicKeyLoaded(true);
+      }
+    }
+
+    void loadPublicKey();
+  }, []);
+
   const filteredProcedures = useMemo(
     () => procedures.filter((proc) => proc.especialidadeSlug === especialidade),
     [especialidade, procedures],
@@ -35,7 +62,8 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
 
   const canSubmit =
     hasConsent &&
-    !!PUBLIC_KEY &&
+    !!publicKeyPem &&
+    publicKeyLoaded &&
     !!especialidade &&
     !!procedimento &&
     !!cidade &&
@@ -48,7 +76,7 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!canSubmit || !arquivo || !PUBLIC_KEY) {
+    if (!canSubmit || !arquivo || !publicKeyPem) {
       return;
     }
 
@@ -57,7 +85,7 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
 
     try {
       const encrypted = await encryptTriagePayload({
-        publicKeyPem: PUBLIC_KEY,
+        publicKeyPem,
         sensitiveData: {
           nome,
           email,
@@ -266,10 +294,10 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
         />
       </label>
 
-      {!PUBLIC_KEY ? (
+      {!publicKeyPem && publicKeyLoaded ? (
         <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
-          NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM não configurada. Configure a chave pública para habilitar a
-          criptografia ponta a ponta.
+          {publicKeyError ||
+            "Chave pública de criptografia não configurada no runtime. Configure TRIAGE_RSA_PUBLIC_KEY_PEM (ou NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM)."}
         </p>
       ) : null}
 
