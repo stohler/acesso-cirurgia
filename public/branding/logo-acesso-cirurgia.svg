@@ -1,0 +1,25 @@
+<svg width="760" height="280" viewBox="0 0 760 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoBlue" x1="20" y1="10" x2="210" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#003B84"/>
+      <stop offset="1" stop-color="#0066C9"/>
+    </linearGradient>
+    <linearGradient id="logoGreen" x1="150" y1="130" x2="250" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00B7A8"/>
+      <stop offset="1" stop-color="#35D6C8"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(8,10)">
+    <path d="M126 8C78.056 8 39 47.056 39 95C39 153.023 102.536 204.974 119.168 217.724C123.14 220.767 128.86 220.767 132.832 217.724C149.464 204.974 213 153.023 213 95C213 47.056 173.944 8 126 8Z" fill="url(#logoBlue)"/>
+    <rect x="96" y="48" width="60" height="46" rx="6" fill="white"/>
+    <rect x="84" y="75" width="84" height="52" rx="6" fill="white"/>
+    <rect x="118" y="56" width="16" height="30" rx="3" fill="#0066C9"/>
+    <rect x="111" y="63" width="30" height="16" rx="3" fill="#0066C9"/>
+    <circle cx="184" cy="133" r="42" fill="url(#logoGreen)" stroke="white" stroke-width="4"/>
+    <path d="M196.6 112.6L198.9 114.9C200.813 116.813 200.813 119.987 198.9 121.9L170.1 150.7L158 154L161.3 141.9L190.1 113.1C192.013 111.187 195.187 111.187 197.1 113.1L196.6 112.6Z" fill="white"/>
+  </g>
+
+  <text x="250" y="115" fill="#003B84" font-size="84" font-weight="700" font-family="Poppins, Arial, sans-serif">Acesso</text>
+  <text x="250" y="200" fill="#00B7A8" font-size="84" font-weight="700" font-family="Poppins, Arial, sans-serif">Cirurgia</text>
+</svg>

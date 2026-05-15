@@ -103,7 +103,7 @@ npm run dev
 
 - O navegador do paciente gera uma chave AES-256-GCM.
 - Dados sensíveis e anexo são criptografados localmente.
-- A chave AES é criptografada com a chave pública RSA (`NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM`).
+- A chave AES é criptografada com a chave pública RSA carregada em **runtime** pela API (`/api/public-config`).
 - O backend recebe e persiste apenas conteúdo criptografado.
 - No dashboard, o médico descriptografa localmente usando a chave privada RSA (não enviada ao servidor).
 
@@ -114,7 +114,13 @@ openssl genpkey -algorithm RSA -out triage_private_key.pem -pkeyopt rsa_keygen_b
 openssl rsa -pubout -in triage_private_key.pem -out triage_public_key.pem
 ```
 
-Use o conteúdo da pública em `NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM`.
+Use uma das opções abaixo:
+
+- **Recomendado (Cloud Run/GitHub Actions):** `TRIAGE_RSA_PUBLIC_KEY_PEM_BASE64` (conteúdo PEM em base64, sem quebras de linha).
+- **Alternativa:** `TRIAGE_RSA_PUBLIC_KEY_PEM` (PEM com `\n` escapado).
+
+> Observação importante: em Next.js, valores `NEXT_PUBLIC_*` em componentes cliente podem ser resolvidos no build.
+> Para evitar inconsistência entre build e deploy, a aplicação lê a chave em runtime no servidor e expõe via endpoint público.
 
 ---
 
@@ -151,7 +157,9 @@ Cadastre no repositório (Settings > Secrets and variables > Actions > Variables
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Provider de federated identity |
 | `GCP_SERVICE_ACCOUNT_EMAIL` | Service Account usada no deploy |
 | `NEXT_PUBLIC_APP_URL` | URL pública da aplicação |
-| `NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM` | Chave pública RSA para E2E |
+| `TRIAGE_RSA_PUBLIC_KEY_PEM_BASE64` | Chave pública RSA para E2E (recomendado, em base64) |
+| `TRIAGE_RSA_PUBLIC_KEY_PEM` | Chave pública RSA para E2E (opcional, PEM com `\\n`) |
+| `NEXT_PUBLIC_TRIAGE_RSA_PUBLIC_KEY_PEM` | Legado/opcional, mantido por compatibilidade |
 | `MONGODB_DB_NAME` | Nome do database no MongoDB Atlas |
 | `GCS_BUCKET_NAME` | Bucket de anexos criptografados |
 | `BOOTSTRAP_DOCTOR_NOME` | Nome inicial de médico bootstrap |
