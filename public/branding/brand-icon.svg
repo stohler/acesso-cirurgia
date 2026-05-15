@@ -1,0 +1,29 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="84" y1="48" x2="388" y2="408" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#003B84"/>
+      <stop offset="1" stop-color="#0066C9"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="290" y1="220" x2="450" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00B7A8"/>
+      <stop offset="1" stop-color="#35D6C8"/>
+    </linearGradient>
+  </defs>
+  <path d="M254 44C162.321 44 88 118.321 88 210C88 327.759 218.125 433.303 246.458 454.876C251.024 458.318 256.976 458.318 261.542 454.876C289.875 433.303 420 327.759 420 210C420 118.321 345.679 44 254 44Z" fill="url(#g1)"/>
+  <path d="M200 130C196.686 130 194 132.686 194 136V170H160C156.686 170 154 172.686 154 176V266C154 269.314 156.686 272 160 272H348C351.314 272 354 269.314 354 266V176C354 172.686 351.314 170 348 170H314V136C314 132.686 311.314 130 308 130H200Z" fill="white" fill-opacity="0.18"/>
+  <rect x="208" y="112" width="96" height="132" rx="8" fill="white" fill-opacity="0.95"/>
+  <rect x="176" y="160" width="160" height="112" rx="8" fill="white" fill-opacity="0.95"/>
+  <rect x="244" y="128" width="24" height="56" rx="4" fill="#0066C9"/>
+  <rect x="228" y="144" width="56" height="24" rx="4" fill="#0066C9"/>
+  <rect x="192" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="216" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="240" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="264" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="288" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="312" y="186" width="12" height="12" rx="2" fill="#0066C9"/>
+  <rect x="246" y="218" width="20" height="30" rx="2" fill="#0066C9"/>
+  <circle cx="360" cy="324" r="96" fill="url(#g2)" stroke="white" stroke-width="8"/>
+  <path d="M392.51 274.39L397.61 279.49C401.297 283.178 401.297 289.162 397.61 292.85L332.93 357.53L311 363L316.47 341.07L381.15 276.39C384.838 272.703 390.822 272.703 394.51 276.39Z" fill="white"/>
+  <path d="M311 363L332.93 357.53L316.47 341.07L311 363Z" fill="#E6FFFF"/>
+  <path d="M302 378C302 373.582 305.582 370 310 370H369C373.418 370 377 373.582 377 378V382H302V378Z" fill="white"/>
+</svg>

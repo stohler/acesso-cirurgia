@@ -47,7 +47,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
 
   return (
     <form
-      className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="grid gap-5"
       onSubmit={(event) => {
         event.preventDefault();
         if (!hasConsent) {
@@ -61,38 +61,38 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
         router.push(`/${especialidade}/${procedimento}/${cidade}`);
       }}
     >
-      <h2 className="text-lg font-semibold text-slate-900">Simulador em 4 etapas</h2>
-      <p className="text-sm text-slate-600">
+      <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Simulador em 4 etapas</h2>
+      <p className="text-sm text-[var(--color-text-secondary)]">
         Siga o fluxo para encontrar a faixa estimada do pacote cirúrgico na sua região.
       </p>
 
-      <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div className="grid gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-3">
         <div className="flex flex-wrap items-center gap-2">
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
                 step === item
-                  ? "bg-sky-700 text-white"
+                  ? "bg-[var(--color-primary-blue)] text-white"
                   : step > item
-                    ? "bg-emerald-100 text-emerald-900"
-                    : "bg-slate-200 text-slate-600"
+                    ? "bg-[var(--color-primary-green-light)] text-[var(--color-text-primary)]"
+                    : "bg-slate-200 text-[var(--color-text-secondary)]"
               }`}
             >
               Etapa {item}
             </div>
           ))}
         </div>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-[var(--color-text-secondary)]">
           Etapa atual: <strong>{step}</strong> de <strong>{totalSteps}</strong>
         </p>
       </div>
 
       {step === 1 ? (
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <label className="grid gap-2 text-sm font-medium text-[var(--color-text-primary)]">
           1) Especialidade
           <select
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-sky-600"
+            className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 outline-none focus:border-[var(--color-primary-blue-light)]"
             value={especialidade}
             onChange={(event) => {
               setEspecialidade(event.target.value);
@@ -112,10 +112,10 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       ) : null}
 
       {step === 2 ? (
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <label className="grid gap-2 text-sm font-medium text-[var(--color-text-primary)]">
           2) Cirurgia/Procedimento
           <select
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-sky-600"
+            className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 outline-none focus:border-[var(--color-primary-blue-light)]"
             value={procedimento}
             onChange={(event) => {
               setProcedimento(event.target.value);
@@ -134,10 +134,10 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       ) : null}
 
       {step === 3 ? (
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <label className="grid gap-2 text-sm font-medium text-[var(--color-text-primary)]">
           3) Estado
           <select
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-sky-600"
+            className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 outline-none focus:border-[var(--color-primary-blue-light)]"
             value={estado}
             onChange={(event) => {
               setEstado(event.target.value);
@@ -155,10 +155,10 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       ) : null}
 
       {step === 4 ? (
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <label className="grid gap-2 text-sm font-medium text-[var(--color-text-primary)]">
           4) Cidade
           <select
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-sky-600"
+            className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 outline-none focus:border-[var(--color-primary-blue-light)]"
             value={cidade}
             onChange={(event) => setCidade(event.target.value)}
           >
@@ -177,7 +177,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
           type="button"
           onClick={() => setStep((current) => Math.max(1, current - 1))}
           disabled={step === 1}
-          className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-soft)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Voltar
         </button>
@@ -187,14 +187,14 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
             type="button"
             onClick={() => setStep((current) => Math.min(totalSteps, current + 1))}
             disabled={!canGoNext}
-            className="rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="btn-primary px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
           >
             Continuar
           </button>
         ) : (
           <button
             type="submit"
-            className="rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="btn-primary px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             disabled={!hasConsent || !canGoNext}
           >
             Ver faixa de valores
@@ -203,7 +203,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       </div>
 
       {!hasConsent ? (
-        <p className="text-xs text-amber-700">Aceite o modal LGPD para habilitar a busca.</p>
+        <p className="text-xs text-[var(--color-warning)]">Aceite o modal LGPD para habilitar a busca.</p>
       ) : null}
     </form>
   );
