@@ -10,17 +10,28 @@ type TriageFormProps = {
   specialties: SpecialtyCatalog[];
   procedures: ProcedureCatalog[];
   cities: CityCatalog[];
+  initialSelection?: {
+    especialidade?: string;
+    procedimento?: string;
+    cidade?: string;
+    medicoId?: string;
+    medicoNome?: string;
+  };
 };
 
-export function TriageForm({ specialties, procedures, cities }: TriageFormProps) {
+export function TriageForm({ specialties, procedures, cities, initialSelection }: TriageFormProps) {
   const { hasConsent, consentVersion } = useConsent();
   const [publicKeyPem, setPublicKeyPem] = useState("");
   const [publicKeyLoaded, setPublicKeyLoaded] = useState(false);
   const [publicKeyError, setPublicKeyError] = useState("");
 
-  const [especialidade, setEspecialidade] = useState(specialties[0]?.slug ?? "cirurgia-geral");
-  const [procedimento, setProcedimento] = useState("");
-  const [cidade, setCidade] = useState("");
+  const [especialidade, setEspecialidade] = useState(
+    initialSelection?.especialidade ?? specialties[0]?.slug ?? "cirurgia-geral",
+  );
+  const [procedimento, setProcedimento] = useState(initialSelection?.procedimento ?? "");
+  const [cidade, setCidade] = useState(initialSelection?.cidade ?? "");
+  const [selectedDoctorId] = useState(initialSelection?.medicoId ?? "");
+  const [selectedDoctorName] = useState(initialSelection?.medicoNome ?? "");
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -114,6 +125,7 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
       const uploadMeta = (await uploadMetaResponse.json()) as {
         signedUrl: string;
         objectPath: string;
+        uploadMode?: "signed-url" | "proxy";
       };
 
       setStatus("Enviando anexo criptografado para o bucket seguro...");
@@ -141,6 +153,13 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
           especialidadeSlug: especialidade,
           procedimentoSlug: procedimento,
           cidadeSlug: cidade,
+          doctorReferral:
+            selectedDoctorId && selectedDoctorName
+              ? {
+                  doctorApplicationId: selectedDoctorId,
+                  doctorName: selectedDoctorName,
+                }
+              : undefined,
           consentimentoLgpd: {
             aceito: true,
             versao: consentVersion,
@@ -191,6 +210,12 @@ export function TriageForm({ specialties, procedures, cities }: TriageFormProps)
       <p className="text-sm text-slate-600">
         Seus dados pessoais e anexos são criptografados localmente antes do envio.
       </p>
+
+      {selectedDoctorId ? (
+        <p className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">
+          Médico selecionado na busca: <strong>{selectedDoctorName || "Equipe local"}</strong>
+        </p>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-medium text-slate-700">

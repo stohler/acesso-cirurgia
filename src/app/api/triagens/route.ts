@@ -11,6 +11,12 @@ const triageCreateSchema = z.object({
   especialidadeSlug: z.string().min(2),
   procedimentoSlug: z.string().min(2),
   cidadeSlug: z.string().min(2),
+  doctorReferral: z
+    .object({
+      doctorApplicationId: z.string().min(3),
+      doctorName: z.string().min(3),
+    })
+    .optional(),
   consentimentoLgpd: z.object({
     aceito: z.literal(true),
     versao: z.string().min(2),
@@ -44,6 +50,7 @@ export async function POST(request: NextRequest) {
             especialidadeSlug: body.especialidadeSlug,
             procedimentoSlug: body.procedimentoSlug,
             cidadeSlug: body.cidadeSlug,
+            doctorReferral: body.doctorReferral,
             consentimentoLgpd: {
               aceito: true,
               aceitoEm: new Date(),
@@ -116,6 +123,7 @@ export async function GET(request: NextRequest) {
       especialidadeSlug: triagem.especialidadeSlug,
       procedimentoSlug: triagem.procedimentoSlug,
       cidadeSlug: triagem.cidadeSlug,
+      doctorReferral: triagem.doctorReferral,
       status: triagem.status,
       createdAt: triagem.createdAt,
       encryptedPayload: triagem.encryptedPayload,

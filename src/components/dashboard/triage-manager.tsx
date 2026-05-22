@@ -10,6 +10,10 @@ type TriageRow = {
   especialidadeSlug: string;
   procedimentoSlug: string;
   cidadeSlug: string;
+  doctorReferral?: {
+    doctorApplicationId?: string;
+    doctorName?: string;
+  };
   status: string;
   createdAt: string;
   encryptedPayload: {
@@ -166,6 +170,9 @@ export function TriageManager({ doctorName, triagens }: TriageManagerProps) {
                 <p className="text-xs text-slate-600">
                   Cidade: {item.cidadeSlug} • Status: {item.status}
                 </p>
+                {item.doctorReferral?.doctorName ? (
+                  <p className="text-xs text-sky-700">Médico selecionado: {item.doctorReferral.doctorName}</p>
+                ) : null}
                 <p className="text-xs text-slate-500">
                   Recebida em {new Date(item.createdAt).toLocaleString("pt-BR")}
                 </p>

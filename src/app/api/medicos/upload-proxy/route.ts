@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { uploadBinaryObject } from "@/lib/gcs";
 
 function isAllowedObjectPath(value: string) {
-  return /^triagens\/\d{4}\/[a-zA-Z0-9_.-]+\.enc$/.test(value);
+  return /^medicos-cadastros\/\d{4}\/[a-zA-Z0-9_.-]+$/.test(value);
 }
 
 export async function PUT(request: Request) {
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ ok: true, objectPath });
   } catch (error) {
     return NextResponse.json(
-      { error: "Falha no upload via proxy.", details: String(error) },
+      { error: "Falha no upload de documento via proxy.", details: String(error) },
       { status: 500 },
     );
   }

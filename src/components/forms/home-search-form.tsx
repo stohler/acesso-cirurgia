@@ -53,9 +53,9 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
 
   const [ufs, setUfs] = useState<UfOption[]>([]);
   const [cidadesDoEstado, setCidadesDoEstado] = useState<CityOption[]>([]);
-  const [localidadesError, setLocalidadesError] = useState("");
   const [loadingUfs, setLoadingUfs] = useState(false);
   const [loadingCidades, setLoadingCidades] = useState(false);
+  const [localidadesError, setLocalidadesError] = useState("");
 
   const [especialidade, setEspecialidade] = useState("");
   const [procedimento, setProcedimento] = useState("");
@@ -88,7 +88,6 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
         nome: item.nome,
         uf: item.uf,
       }));
-
   const cidadeSelecionada = cidadesDisponiveis.find((item) => item.slug === cidade);
 
   const canGoNext =
@@ -103,18 +102,18 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       setLoadingUfs(true);
       setLocalidadesError("");
       try {
-        const response = await fetch("/api/localidades/ufs", { cache: "force-cache" });
+        const response = await fetch("/api/localidades/ufs", {
+          cache: "force-cache",
+        });
+
         if (!response.ok) {
           throw new Error(`status ${response.status}`);
         }
 
-        const payload = (await response.json()) as {
-          ufs: UfOption[];
-        };
-
+        const payload = (await response.json()) as { ufs: UfOption[] };
         setUfs(payload.ufs ?? []);
       } catch {
-        setLocalidadesError("Não foi possível carregar todos os estados agora. Mostrando opções disponíveis.");
+        setLocalidadesError("Não foi possível carregar todos os estados agora. Exibindo opções locais.");
       } finally {
         setLoadingUfs(false);
       }
@@ -128,14 +127,13 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       return;
     }
 
-    async function loadCidadesByEstado() {
+    async function loadCitiesByState() {
       setLoadingCidades(true);
       setLocalidadesError("");
       try {
         const response = await fetch(`/api/localidades/ufs/${estado}/cidades`, {
           cache: "force-cache",
         });
-
         if (!response.ok) {
           throw new Error(`status ${response.status}`);
         }
@@ -144,7 +142,6 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
           uf: string;
           cidades: Array<{ slug: string; nome: string }>;
         };
-
         setCidadesDoEstado(
           (payload.cidades ?? []).map((item) => ({
             slug: item.slug,
@@ -160,7 +157,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       }
     }
 
-    void loadCidadesByEstado();
+    void loadCitiesByState();
   }, [estado]);
 
   return (

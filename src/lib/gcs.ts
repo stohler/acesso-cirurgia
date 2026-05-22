@@ -66,7 +66,7 @@ export async function createDownloadSignedUrl(objectPath: string, expiresInMinut
   return signedUrl;
 }
 
-export async function uploadEncryptedObject(params: {
+export async function uploadBinaryObject(params: {
   objectPath: string;
   buffer: Buffer;
   contentType?: string;
@@ -81,8 +81,4 @@ export async function uploadEncryptedObject(params: {
       cacheControl: "private, max-age=0, no-store",
     },
   });
-
-  return {
-    objectPath: params.objectPath,
-  };
 }

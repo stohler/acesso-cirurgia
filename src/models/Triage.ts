@@ -5,6 +5,10 @@ const triageSchema = new Schema(
     especialidadeSlug: { type: String, required: true, index: true },
     procedimentoSlug: { type: String, required: true, index: true },
     cidadeSlug: { type: String, required: true, index: true },
+    doctorReferral: {
+      doctorApplicationId: { type: String, required: false, index: true },
+      doctorName: { type: String, required: false },
+    },
     consentimentoLgpd: {
       aceito: { type: Boolean, required: true },
       aceitoEm: { type: Date, required: true },

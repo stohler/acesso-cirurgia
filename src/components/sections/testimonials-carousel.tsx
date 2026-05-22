@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Testimonial = {
   id: number;
@@ -97,8 +97,6 @@ const TESTIMONIALS: Testimonial[] = [
 export function TestimonialsCarousel() {
   const [current, setCurrent] = useState(0);
 
-  const currentItem = useMemo(() => TESTIMONIALS[current], [current]);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % TESTIMONIALS.length);
@@ -107,22 +105,24 @@ export function TestimonialsCarousel() {
     return () => clearInterval(interval);
   }, []);
 
+  const selected = TESTIMONIALS[current];
+
   return (
     <section className="card grid gap-4 p-6">
       <header className="grid gap-1">
-        <h2 className="text-2xl font-semibold">Quem passou pelo processo recomenda</h2>
+        <h2 className="text-2xl font-semibold">Depoimentos de pacientes</h2>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Relatos de pacientes que buscaram alternativa ao SUS com pacote acessível e previsível.
+          Histórias reais de quem buscou alternativa ao SUS com suporte da plataforma.
         </p>
       </header>
 
-      <article className="relative rounded-2xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-5">
+      <article className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-5">
         <Quote className="text-[var(--color-primary-green)]" size={22} />
-        <p className="mt-3 text-base leading-7 text-[var(--color-text-primary)]">{currentItem.depoimento}</p>
+        <p className="mt-3 text-base leading-7 text-[var(--color-text-primary)]">{selected.depoimento}</p>
         <p className="mt-4 text-sm font-semibold text-[var(--color-text-primary)]">
-          {currentItem.nome} • {currentItem.cidade}
+          {selected.nome} • {selected.cidade}
         </p>
-        <p className="text-xs text-[var(--color-text-secondary)]">Procedimento: {currentItem.procedimento}</p>
+        <p className="text-xs text-[var(--color-text-secondary)]">Procedimento: {selected.procedimento}</p>
       </article>
 
       <div className="flex items-center justify-between gap-3">
@@ -132,7 +132,7 @@ export function TestimonialsCarousel() {
               key={item.id}
               type="button"
               onClick={() => setCurrent(index)}
-              className={`h-2.5 w-2.5 rounded-full transition ${
+              className={`h-2.5 w-2.5 rounded-full ${
                 current === index ? "bg-[var(--color-primary-blue)]" : "bg-[var(--color-border)]"
               }`}
               aria-label={`Ir para depoimento ${index + 1}`}
@@ -143,7 +143,7 @@ export function TestimonialsCarousel() {
           <button
             type="button"
             onClick={() => setCurrent((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-            className="rounded-lg border border-[var(--color-border)] p-2 text-[var(--color-text-primary)] hover:bg-[var(--color-background-soft)]"
+            className="rounded-lg border border-[var(--color-border)] p-2 hover:bg-[var(--color-background-soft)]"
             aria-label="Depoimento anterior"
           >
             <ChevronLeft size={16} />
@@ -151,7 +151,7 @@ export function TestimonialsCarousel() {
           <button
             type="button"
             onClick={() => setCurrent((prev) => (prev + 1) % TESTIMONIALS.length)}
-            className="rounded-lg border border-[var(--color-border)] p-2 text-[var(--color-text-primary)] hover:bg-[var(--color-background-soft)]"
+            className="rounded-lg border border-[var(--color-border)] p-2 hover:bg-[var(--color-background-soft)]"
             aria-label="Próximo depoimento"
           >
             <ChevronRight size={16} />

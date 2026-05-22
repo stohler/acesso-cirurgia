@@ -225,6 +225,9 @@ export default async function Home() {
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
           <span>Responsável técnico: Dr(a). Nome Sobrenome - CRM 000000 (placeholder)</span>
           <span>Política de Privacidade • Termos de Uso • Canal LGPD (placeholder)</span>
+          <Link href="/medicos/parceiros" className="font-semibold text-[var(--color-primary-blue-light)] hover:underline">
+            Sou médico e desejo me associar
+          </Link>
         </div>
       </footer>
     </main>
