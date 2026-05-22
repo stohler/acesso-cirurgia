@@ -85,3 +85,31 @@ export async function findPriceEstimate(especialidade: string, procedimento: str
     ) ?? null
   );
 }
+
+export async function getFeaturedPriceEstimates(limit = 6) {
+  try {
+    await connectToDatabase();
+
+    const estimates = await PriceEstimateModel.find({ active: true })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    if (estimates.length > 0) {
+      return estimates.map((estimate) => ({
+        especialidadeSlug: estimate.especialidadeSlug,
+        procedimentoSlug: estimate.procedimentoSlug,
+        cidadeSlug: estimate.cidadeSlug,
+        cidadeNome: estimate.cidadeNome,
+        uf: estimate.uf,
+        pacote: estimate.pacote,
+        precoMinimo: estimate.precoMinimo,
+        precoMaximo: estimate.precoMaximo,
+      }));
+    }
+  } catch {
+    // fallback para defaults abaixo
+  }
+
+  return DEFAULT_PRICE_ESTIMATES.slice(0, limit);
+}

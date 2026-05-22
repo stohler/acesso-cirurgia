@@ -13,12 +13,11 @@ import {
 import { HomeSearchForm } from "@/components/forms/home-search-form";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { PriceDisclaimer } from "@/components/seo/price-disclaimer";
-import { DEFAULT_PRICE_ESTIMATES } from "@/lib/constants";
-import { getCatalogData } from "@/lib/catalog-service";
+import { getCatalogData, getFeaturedPriceEstimates } from "@/lib/catalog-service";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function Home() {
-  const catalog = await getCatalogData();
+  const [catalog, featuredEstimates] = await Promise.all([getCatalogData(), getFeaturedPriceEstimates(6)]);
 
   return (
     <main className="grid gap-8 pb-4">
@@ -119,7 +118,7 @@ export default async function Home() {
       <section className="grid gap-4">
         <h2 className="text-xl font-semibold">Faixas estimadas em destaque</h2>
         <div className="grid gap-3 md:grid-cols-2">
-          {DEFAULT_PRICE_ESTIMATES.map((estimate) => (
+          {featuredEstimates.map((estimate) => (
             <article key={`${estimate.procedimentoSlug}-${estimate.cidadeSlug}`} className="card p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary-blue-light)]">
                 {estimate.especialidadeSlug}

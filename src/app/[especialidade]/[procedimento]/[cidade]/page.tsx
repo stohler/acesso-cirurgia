@@ -20,6 +20,8 @@ type RouteProps = {
   }>;
 };
 
+type LocalDoctor = Awaited<ReturnType<typeof getLocalDoctors>>[number];
+
 export const dynamic = "force-dynamic";
 
 function formatSlug(value: string) {
@@ -54,15 +56,13 @@ async function loadPageData({
   const cidadeNome = city?.nome ?? cidadeNomeFromQuery ?? formatSlug(cidade);
   const uf = city?.uf ?? ufFromQuery ?? "BR";
 
-  const doctors = estimate
-    ? await getLocalDoctors({
-        especialidadeSlug: especialidade,
-        procedimentoSlug: procedimento,
-        cidadeSlug: cidade,
-        cidadeNome,
-        uf,
-      })
-    : [];
+  const doctors = await getLocalDoctors({
+    especialidadeSlug: especialidade,
+    procedimentoSlug: procedimento,
+    cidadeSlug: cidade,
+    cidadeNome,
+    uf,
+  });
 
   return {
     specialty,
@@ -147,6 +147,15 @@ export default async function PriceByLocationPage({ params, searchParams }: Rout
     );
   }
 
+  const doctorsSection = (
+    <DoctorsAvailabilitySection
+      doctors={data.doctors}
+      especialidadeSlug={resolved.especialidade}
+      procedimentoSlug={resolved.procedimento}
+      cidadeSlug={resolved.cidade}
+    />
+  );
+
   if (!data.estimate) {
     return (
       <main className="grid gap-6">
@@ -180,6 +189,8 @@ export default async function PriceByLocationPage({ params, searchParams }: Rout
             </Link>
           </div>
         </section>
+
+        {doctorsSection}
       </main>
     );
   }
@@ -239,47 +250,61 @@ export default async function PriceByLocationPage({ params, searchParams }: Rout
         </div>
       </section>
 
-      <section className="grid gap-4">
-        <h2 className="text-xl font-semibold text-slate-900">Médicos disponíveis na sua localidade</h2>
-        {data.doctors.length === 0 ? (
-          <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm">
-            Ainda não há médicos exibidos para este local. Continue com a triagem e nosso time fará o
-            encaminhamento.
-          </p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {data.doctors.map((doctor) => (
-              <article key={doctor.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <span className="rounded-xl bg-sky-100 p-2 text-sky-700">
-                    <UserRoundCheck size={18} />
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{doctor.nome}</h3>
-                    <p className="text-xs text-slate-500">
-                      CRM {doctor.crm}-{doctor.crmUf}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">{doctor.enderecoProcedimento}</p>
-                  </div>
-                </div>
-
-                <p className="mt-3 text-sm text-slate-700">
-                  Valor médio do pacote:{" "}
-                  <strong>{formatCurrency(doctor.valorMedioPacote)}</strong>
-                </p>
-                <p className="text-xs text-slate-500">Contato: {doctor.telefone}</p>
-
-                <Link
-                  href={`/triagem?especialidade=${resolved.especialidade}&procedimento=${resolved.procedimento}&cidade=${resolved.cidade}&medicoId=${doctor.id}&medicoNome=${encodeURIComponent(doctor.nome)}`}
-                  className="mt-4 inline-flex rounded-xl bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800"
-                >
-                  Selecionar médico e iniciar triagem
-                </Link>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      {doctorsSection}
     </main>
+  );
+}
+
+function DoctorsAvailabilitySection({
+  doctors,
+  especialidadeSlug,
+  procedimentoSlug,
+  cidadeSlug,
+}: {
+  doctors: LocalDoctor[];
+  especialidadeSlug: string;
+  procedimentoSlug: string;
+  cidadeSlug: string;
+}) {
+  return (
+    <section className="grid gap-4">
+      <h2 className="text-xl font-semibold text-slate-900">Médicos disponíveis na sua localidade</h2>
+      {doctors.length === 0 ? (
+        <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm">
+          Ainda não há médicos exibidos para este local. Continue com a triagem e nosso time fará o encaminhamento.
+        </p>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {doctors.map((doctor) => (
+            <article key={doctor.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <span className="rounded-xl bg-sky-100 p-2 text-sky-700">
+                  <UserRoundCheck size={18} />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">{doctor.nome}</h3>
+                  <p className="text-xs text-slate-500">
+                    CRM {doctor.crm}-{doctor.crmUf}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">{doctor.enderecoProcedimento}</p>
+                </div>
+              </div>
+
+              <p className="mt-3 text-sm text-slate-700">
+                Valor médio do pacote: <strong>{formatCurrency(doctor.valorMedioPacote)}</strong>
+              </p>
+              <p className="text-xs text-slate-500">Contato: {doctor.telefone}</p>
+
+              <Link
+                href={`/triagem?especialidade=${especialidadeSlug}&procedimento=${procedimentoSlug}&cidade=${cidadeSlug}&medicoId=${doctor.id}&medicoNome=${encodeURIComponent(doctor.nome)}`}
+                className="mt-4 inline-flex rounded-xl bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800"
+              >
+                Selecionar médico e iniciar triagem
+              </Link>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

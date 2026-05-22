@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getSession } from "@/lib/auth";
+import { syncDoctorApplicationApproval } from "@/lib/doctor-approval-sync";
 import { connectToDatabase } from "@/lib/mongodb";
 import { DoctorApplicationModel } from "@/models/DoctorApplication";
 
@@ -41,6 +42,18 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Solicitação não encontrada." }, { status: 404 });
     }
+
+    await syncDoctorApplicationApproval({
+      procedurePricing: (updated.procedurePricing ?? []) as Array<{
+        especialidadeSlug: string;
+        procedimentoSlug: string;
+        cidadeSlug: string;
+        cidadeNome: string;
+        uf: string;
+        enderecoProcedimento: string;
+        valorMedioPacote: number;
+      }>,
+    });
 
     return NextResponse.json({
       ok: true,
