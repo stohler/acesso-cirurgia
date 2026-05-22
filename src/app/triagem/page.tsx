@@ -3,8 +3,19 @@ import Link from "next/link";
 import { TriageForm } from "@/components/forms/triage-form";
 import { getCatalogData } from "@/lib/catalog-service";
 
-export default async function TriagemPage() {
+type TriagemPageProps = {
+  searchParams: Promise<{
+    especialidade?: string;
+    procedimento?: string;
+    cidade?: string;
+    medicoId?: string;
+    medicoNome?: string;
+  }>;
+};
+
+export default async function TriagemPage({ searchParams }: TriagemPageProps) {
   const catalog = await getCatalogData();
+  const filters = await searchParams;
 
   return (
     <main className="grid gap-6">
@@ -19,7 +30,18 @@ export default async function TriagemPage() {
         </Link>
       </header>
 
-      <TriageForm specialties={catalog.specialties} procedures={catalog.procedures} cities={catalog.cities} />
+      <TriageForm
+        specialties={catalog.specialties}
+        procedures={catalog.procedures}
+        cities={catalog.cities}
+        initialSelection={{
+          especialidade: filters.especialidade,
+          procedimento: filters.procedimento,
+          cidade: filters.cidade,
+          medicoId: filters.medicoId,
+          medicoNome: filters.medicoNome,
+        }}
+      />
     </main>
   );
 }

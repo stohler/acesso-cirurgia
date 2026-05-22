@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -19,6 +19,17 @@ type HomeSearchFormProps = {
   specialties: SpecialtyCatalog[];
   procedures: ProcedureCatalog[];
   cities: CityCatalog[];
+};
+
+type UfOption = {
+  sigla: string;
+  nome: string;
+};
+
+type CityOption = {
+  slug: string;
+  nome: string;
+  uf: string;
 };
 
 const procedureVisualMap: Record<string, { icon: LucideIcon; label: string }> = {
@@ -40,6 +51,12 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
   const router = useRouter();
   const { hasConsent } = useConsent();
 
+  const [ufs, setUfs] = useState<UfOption[]>([]);
+  const [cidadesDoEstado, setCidadesDoEstado] = useState<CityOption[]>([]);
+  const [loadingUfs, setLoadingUfs] = useState(false);
+  const [loadingCidades, setLoadingCidades] = useState(false);
+  const [localidadesError, setLocalidadesError] = useState("");
+
   const [especialidade, setEspecialidade] = useState("");
   const [procedimento, setProcedimento] = useState("");
   const [estado, setEstado] = useState("");
@@ -53,15 +70,25 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
     [especialidade, procedures],
   );
 
-  const estadosDisponiveis = useMemo(
+  const fallbackEstados = useMemo(
     () => [...new Set(cities.map((item) => item.uf))].sort((a, b) => a.localeCompare(b)),
     [cities],
   );
 
-  const cidadesDisponiveis = useMemo(
+  const fallbackCidadesDoEstado = useMemo(
     () => cities.filter((item) => item.uf === estado),
     [cities, estado],
   );
+
+  const estadosDisponiveis = ufs.length ? ufs.map((item) => item.sigla) : fallbackEstados;
+  const cidadesDisponiveis = cidadesDoEstado.length
+    ? cidadesDoEstado
+    : fallbackCidadesDoEstado.map((item) => ({
+        slug: item.slug,
+        nome: item.nome,
+        uf: item.uf,
+      }));
+  const cidadeSelecionada = cidadesDisponiveis.find((item) => item.slug === cidade);
 
   const canGoNext =
     (step === 1 && !!especialidade) ||
@@ -69,6 +96,69 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
     (step === 3 && !!estado) ||
     (step === 4 && !!cidade);
   const progress = Math.round((step / totalSteps) * 100);
+
+  useEffect(() => {
+    async function loadUfs() {
+      setLoadingUfs(true);
+      setLocalidadesError("");
+      try {
+        const response = await fetch("/api/localidades/ufs", {
+          cache: "force-cache",
+        });
+
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
+
+        const payload = (await response.json()) as { ufs: UfOption[] };
+        setUfs(payload.ufs ?? []);
+      } catch {
+        setLocalidadesError("Não foi possível carregar todos os estados agora. Exibindo opções locais.");
+      } finally {
+        setLoadingUfs(false);
+      }
+    }
+
+    void loadUfs();
+  }, []);
+
+  useEffect(() => {
+    if (!estado) {
+      return;
+    }
+
+    async function loadCitiesByState() {
+      setLoadingCidades(true);
+      setLocalidadesError("");
+      try {
+        const response = await fetch(`/api/localidades/ufs/${estado}/cidades`, {
+          cache: "force-cache",
+        });
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
+
+        const payload = (await response.json()) as {
+          uf: string;
+          cidades: Array<{ slug: string; nome: string }>;
+        };
+        setCidadesDoEstado(
+          (payload.cidades ?? []).map((item) => ({
+            slug: item.slug,
+            nome: item.nome,
+            uf: payload.uf ?? estado,
+          })),
+        );
+      } catch {
+        setLocalidadesError("Não foi possível carregar cidades no momento. Exibindo base local.");
+        setCidadesDoEstado([]);
+      } finally {
+        setLoadingCidades(false);
+      }
+    }
+
+    void loadCitiesByState();
+  }, [estado]);
 
   return (
     <form
@@ -83,7 +173,12 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
           return;
         }
 
-        router.push(`/${especialidade}/${procedimento}/${cidade}`);
+        const cidadeNomeQuery = cidadeSelecionada?.nome ?? cidade;
+        router.push(
+          `/${especialidade}/${procedimento}/${cidade}?uf=${encodeURIComponent(
+            estado,
+          )}&cidadeNome=${encodeURIComponent(cidadeNomeQuery)}`,
+        );
       }}
     >
       <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Simulador em 4 etapas</h2>
@@ -119,6 +214,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
                 setProcedimento("");
                 setEstado("");
                 setCidade("");
+                setCidadesDoEstado([]);
               }}
             >
               <option value="">Selecione</option>
@@ -142,6 +238,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
                   setProcedimento(event.target.value);
                   setEstado("");
                   setCidade("");
+                  setCidadesDoEstado([]);
                 }}
               >
                 <option value="">Selecione</option>
@@ -166,6 +263,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
                       setProcedimento(item.slug);
                       setEstado("");
                       setCidade("");
+                      setCidadesDoEstado([]);
                     }}
                     className={`flex items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
                       procedimento === item.slug
@@ -204,6 +302,9 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
                 </option>
               ))}
             </select>
+            {loadingUfs ? (
+              <span className="text-xs text-[var(--color-text-secondary)]">Carregando estados do Brasil...</span>
+            ) : null}
           </label>
         ) : null}
 
@@ -222,6 +323,9 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
                 </option>
               ))}
             </select>
+            {loadingCidades ? (
+              <span className="text-xs text-[var(--color-text-secondary)]">Carregando cidades do estado...</span>
+            ) : null}
           </label>
         ) : null}
       </div>
@@ -261,6 +365,7 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       {!hasConsent ? (
         <p className="text-xs text-[var(--color-warning)]">Aceite o modal LGPD para habilitar a busca.</p>
       ) : null}
+      {localidadesError ? <p className="text-xs text-[var(--color-text-secondary)]">{localidadesError}</p> : null}
     </form>
   );
 }

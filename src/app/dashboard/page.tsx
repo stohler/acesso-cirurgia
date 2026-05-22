@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { DoctorApplicationsManager } from "@/components/dashboard/doctor-applications-manager";
 import { TriageManager } from "@/components/dashboard/triage-manager";
 import { getSession } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
+import { DoctorApplicationModel } from "@/models/DoctorApplication";
 import { TriageModel } from "@/models/Triage";
 
 type DashboardPageProps = {
@@ -36,6 +38,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const triagens = await TriageModel.find(query).sort({ createdAt: -1 }).limit(120).lean();
+  const doctorApplications = await DoctorApplicationModel.find({})
+    .sort({ createdAt: -1 })
+    .limit(120)
+    .lean();
 
   return (
     <main className="grid gap-4">
@@ -86,6 +92,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           especialidadeSlug: triagem.especialidadeSlug,
           procedimentoSlug: triagem.procedimentoSlug,
           cidadeSlug: triagem.cidadeSlug,
+          doctorReferral: triagem.doctorReferral
+            ? {
+                doctorApplicationId: triagem.doctorReferral.doctorApplicationId,
+                doctorName: triagem.doctorReferral.doctorName,
+              }
+            : undefined,
           status: triagem.status,
           createdAt: triagem.createdAt?.toISOString() ?? new Date().toISOString(),
           encryptedPayload: {
@@ -101,6 +113,25 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               iv: triagem.attachment.encryption.iv,
             },
           },
+        }))}
+      />
+
+      <DoctorApplicationsManager
+        initialApplications={doctorApplications.map((application) => ({
+          id: String(application._id),
+          nome: application.nome,
+          email: application.email,
+          telefone: application.telefone,
+          crm: application.crm,
+          crmUf: application.crmUf,
+          status: application.status,
+          activeForPublicListing: application.activeForPublicListing,
+          procedimentosRealizados: application.procedimentosRealizados,
+          certidaoRegularidadeObjectPath: application.certidaoRegularidadeObjectPath,
+          fotoObjectPath: application.fotoObjectPath,
+          procedurePricing: application.procedurePricing,
+          createdAt: application.createdAt?.toISOString() ?? new Date().toISOString(),
+          review: application.review,
         }))}
       />
     </main>

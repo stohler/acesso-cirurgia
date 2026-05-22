@@ -7,12 +7,15 @@ import { createUploadSignedUrl } from "@/lib/gcs";
 
 const bodySchema = z.object({
   originalFileName: z.string().min(3).max(180),
+  fileKind: z.enum(["foto", "certidao"]),
 });
 
 export async function POST(request: Request) {
   try {
     const body = bodySchema.parse(await request.json());
-    const objectPath = `triagens/${new Date().getUTCFullYear()}/${crypto.randomUUID()}-${body.originalFileName.replace(/\s+/g, "-")}.enc`;
+    const sanitizedName = body.originalFileName.replace(/\s+/g, "-");
+    const objectPath = `medicos-cadastros/${new Date().getUTCFullYear()}/${crypto.randomUUID()}-${body.fileKind}-${sanitizedName}`;
+
     try {
       const signedUrl = await createUploadSignedUrl(objectPath, 20);
 
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
       const normalizedError = String(error);
       if (normalizedError.includes("iam.serviceAccounts.signBlob")) {
         return NextResponse.json({
-          signedUrl: `/api/triagens/upload-proxy?objectPath=${encodeURIComponent(objectPath)}`,
+          signedUrl: `/api/medicos/upload-proxy?objectPath=${encodeURIComponent(objectPath)}`,
           objectPath,
           uploadMode: "proxy",
           warning:
@@ -37,7 +40,7 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     return NextResponse.json(
-      { error: "Não foi possível gerar URL de upload.", details: String(error) },
+      { error: "Não foi possível gerar URL para upload do documento.", details: String(error) },
       { status: 400 },
     );
   }
