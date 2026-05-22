@@ -67,6 +67,7 @@ export async function getLocalDoctors(params: {
 }) {
   try {
     await connectToDatabase();
+    const normalizedUf = params.uf.toUpperCase();
 
     const applications = await DoctorApplicationModel.find({
       status: "aprovado",
@@ -76,6 +77,7 @@ export async function getLocalDoctors(params: {
           especialidadeSlug: params.especialidadeSlug,
           procedimentoSlug: params.procedimentoSlug,
           cidadeSlug: params.cidadeSlug,
+          uf: normalizedUf,
         },
       },
     }).lean();
@@ -87,7 +89,8 @@ export async function getLocalDoctors(params: {
           (pricing: ProcedurePricingItem) =>
             pricing.especialidadeSlug === params.especialidadeSlug &&
             pricing.procedimentoSlug === params.procedimentoSlug &&
-            pricing.cidadeSlug === params.cidadeSlug,
+            pricing.cidadeSlug === params.cidadeSlug &&
+            pricing.uf.toUpperCase() === normalizedUf,
         );
 
         if (!selectedPricing) {
@@ -115,6 +118,7 @@ export async function getLocalDoctors(params: {
     return FALLBACK_DOCTORS.filter(
       (doctor) =>
         doctor.cidadeSlug === params.cidadeSlug &&
+        doctor.uf.toUpperCase() === params.uf.toUpperCase() &&
         doctor.procedimentosRealizados.includes(params.procedimentoSlug),
     );
   }
