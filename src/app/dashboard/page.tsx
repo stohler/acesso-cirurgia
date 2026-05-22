@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 
 import { DoctorApplicationsManager } from "@/components/dashboard/doctor-applications-manager";
+import { SearchStatsPanel } from "@/components/dashboard/search-stats-panel";
 import { TriageManager } from "@/components/dashboard/triage-manager";
 import { getSession } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { DoctorApplicationModel } from "@/models/DoctorApplication";
+import { SearchEventModel } from "@/models/SearchEvent";
 import { TriageModel } from "@/models/Triage";
 
 type DashboardPageProps = {
@@ -38,10 +40,55 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const triagens = await TriageModel.find(query).sort({ createdAt: -1 }).limit(120).lean();
-  const doctorApplications = await DoctorApplicationModel.find({})
-    .sort({ createdAt: -1 })
-    .limit(120)
-    .lean();
+  const [
+    doctorApplications,
+    totalSearches,
+    withPriceEstimate,
+    withoutPriceEstimate,
+    topCitiesRaw,
+    topProceduresRaw,
+  ] = await Promise.all([
+    DoctorApplicationModel.find({}).sort({ createdAt: -1 }).limit(120).lean(),
+    SearchEventModel.countDocuments(),
+    SearchEventModel.countDocuments({ hasPriceEstimate: true }),
+    SearchEventModel.countDocuments({ hasPriceEstimate: false }),
+    SearchEventModel.aggregate([
+      {
+        $group: {
+          _id: {
+            cidadeNome: "$cidadeNome",
+            uf: "$uf",
+          },
+          total: { $sum: 1 },
+        },
+      },
+      { $sort: { total: -1 } },
+      { $limit: 5 },
+    ]),
+    SearchEventModel.aggregate([
+      {
+        $group: {
+          _id: "$procedimentoSlug",
+          total: { $sum: 1 },
+        },
+      },
+      { $sort: { total: -1 } },
+      { $limit: 5 },
+    ]),
+  ]);
+
+  const topCities = (topCitiesRaw as Array<{ _id?: { cidadeNome?: string; uf?: string }; total: number }>).map(
+    (item) => ({
+      label: `${item._id?.cidadeNome ?? "Cidade"}${item._id?.uf ? ` - ${item._id.uf}` : ""}`,
+      total: item.total,
+    }),
+  );
+  const topProcedures = (
+    topProceduresRaw as Array<{ _id?: string; total: number }>
+  ).map((item) => ({
+    label: (item._id ?? "procedimento").replace(/-/g, " "),
+    total: item.total,
+  }));
 
   return (
     <main className="grid gap-4">
@@ -133,6 +180,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           createdAt: application.createdAt?.toISOString() ?? new Date().toISOString(),
           review: application.review,
         }))}
+      />
+
+      <SearchStatsPanel
+        totalSearches={totalSearches}
+        withPriceEstimate={withPriceEstimate}
+        withoutPriceEstimate={withoutPriceEstimate}
+        topCities={topCities}
+        topProcedures={topProcedures}
       />
     </main>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import type { ProcedureCatalog, SpecialtyCatalog } from "@/lib/types";
@@ -21,6 +21,29 @@ type DoctorPartnerFormProps = {
   procedures: ProcedureCatalog[];
 };
 
+type UfOption = {
+  sigla: string;
+  nome: string;
+};
+
+type CityOption = {
+  slug: string;
+  nome: string;
+};
+
+function newPricingRow(specialtySlug: string): PricingRow {
+  return {
+    id: crypto.randomUUID(),
+    especialidadeSlug: specialtySlug,
+    procedimentoSlug: "",
+    cidadeSlug: "",
+    cidadeNome: "",
+    uf: "SP",
+    enderecoProcedimento: "",
+    valorMedioPacote: "",
+  };
+}
+
 function toSlug(value: string) {
   return value
     .normalize("NFD")
@@ -28,6 +51,28 @@ function toSlug(value: string) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "-");
+}
+
+function formatBrazilPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.length <= 2) {
+    return `(${digits}`;
+  }
+
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
 export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerFormProps) {
@@ -38,31 +83,104 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
   const [crmUf, setCrmUf] = useState("SP");
   const [rqe, setRqe] = useState("");
   const [miniBio, setMiniBio] = useState("");
+  const [selectedProcedureSpecialty, setSelectedProcedureSpecialty] = useState(
+    specialties[0]?.slug ?? "cirurgia-geral",
+  );
+  const [procedureSearchTerm, setProcedureSearchTerm] = useState("");
+  const [procedureToAdd, setProcedureToAdd] = useState("");
   const [procedimentosRealizados, setProcedimentosRealizados] = useState<string[]>([]);
   const [pricingRows, setPricingRows] = useState<PricingRow[]>([
-    {
-      id: crypto.randomUUID(),
-      especialidadeSlug: specialties[0]?.slug ?? "cirurgia-geral",
-      procedimentoSlug: "",
-      cidadeSlug: "",
-      cidadeNome: "",
-      uf: "SP",
-      enderecoProcedimento: "",
-      valorMedioPacote: "",
-    },
+    newPricingRow(specialties[0]?.slug ?? "cirurgia-geral"),
   ]);
+  const [ufs, setUfs] = useState<UfOption[]>([]);
+  const [citiesByUf, setCitiesByUf] = useState<Record<string, CityOption[]>>({});
+  const [loadingCitiesByUf, setLoadingCitiesByUf] = useState<Record<string, boolean>>({});
+  const [localityMessage, setLocalityMessage] = useState("");
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [certidaoFile, setCertidaoFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState("");
 
-  const procedimentosDisponiveis = useMemo(
+  const proceduresBySpecialty = useMemo(
     () =>
-      specialties.length
-        ? procedures.filter((item) => specialties.some((specialty) => specialty.slug === item.especialidadeSlug))
-        : procedures,
-    [procedures, specialties],
+      procedures
+        .filter((item) => item.especialidadeSlug === selectedProcedureSpecialty)
+        .filter((item) =>
+          procedureSearchTerm
+            ? item.nome.toLowerCase().includes(procedureSearchTerm.toLowerCase().trim())
+            : true,
+        ),
+    [procedures, procedureSearchTerm, selectedProcedureSpecialty],
   );
+
+  const selectedProceduresDetails = useMemo(
+    () =>
+      procedimentosRealizados
+        .map((slug) => ({
+          slug,
+          nome: procedures.find((procedure) => procedure.slug === slug)?.nome ?? slug,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome)),
+    [procedimentosRealizados, procedures],
+  );
+
+  const loadCitiesByUf = useCallback(async (uf: string) => {
+    const normalizedUf = uf.toUpperCase();
+    if (!normalizedUf || citiesByUf[normalizedUf]) {
+      return;
+    }
+
+    setLoadingCitiesByUf((prev) => ({ ...prev, [normalizedUf]: true }));
+    setLocalityMessage("");
+    try {
+      const response = await fetch(`/api/localidades/ufs/${normalizedUf}/cidades`, {
+        cache: "force-cache",
+      });
+      if (!response.ok) {
+        throw new Error(`status ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        cidades: Array<{ slug: string; nome: string }>;
+      };
+
+      setCitiesByUf((prev) => ({
+        ...prev,
+        [normalizedUf]: payload.cidades ?? [],
+      }));
+    } catch {
+      setLocalityMessage("Não foi possível carregar cidades agora. Tente novamente em instantes.");
+    } finally {
+      setLoadingCitiesByUf((prev) => ({ ...prev, [normalizedUf]: false }));
+    }
+  }, [citiesByUf]);
+
+  useEffect(() => {
+    async function loadUfs() {
+      try {
+        const response = await fetch("/api/localidades/ufs", { cache: "force-cache" });
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
+
+        const payload = (await response.json()) as {
+          ufs: UfOption[];
+        };
+        setUfs(payload.ufs ?? []);
+      } catch {
+        setLocalityMessage("Não foi possível carregar estados no momento.");
+      }
+    }
+
+    void loadUfs();
+  }, []);
+
+  useEffect(() => {
+    const uniqueUfs = [...new Set(pricingRows.map((row) => row.uf).filter(Boolean))];
+    uniqueUfs.forEach((uf) => {
+      void loadCitiesByUf(uf);
+    });
+  }, [loadCitiesByUf, pricingRows]);
 
   async function uploadMedicalDocument(file: File, fileKind: "foto" | "certidao") {
     const metaResponse = await fetch("/api/medicos/upload-url", {
@@ -156,19 +274,10 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
           setCrm("");
           setRqe("");
           setMiniBio("");
+          setProcedureSearchTerm("");
+          setProcedureToAdd("");
           setProcedimentosRealizados([]);
-          setPricingRows([
-            {
-              id: crypto.randomUUID(),
-              especialidadeSlug: specialties[0]?.slug ?? "cirurgia-geral",
-              procedimentoSlug: "",
-              cidadeSlug: "",
-              cidadeNome: "",
-              uf: "SP",
-              enderecoProcedimento: "",
-              valorMedioPacote: "",
-            },
-          ]);
+          setPricingRows([newPricingRow(specialties[0]?.slug ?? "cirurgia-geral")]);
           setFotoFile(null);
           setCertidaoFile(null);
         } catch (error) {
@@ -197,7 +306,13 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
         </label>
         <label className="grid gap-1 text-sm font-medium text-[var(--color-text-primary)]">
           Telefone
-          <input value={telefone} onChange={(event) => setTelefone(event.target.value)} required className="px-3 py-2" />
+          <input
+            value={telefone}
+            onChange={(event) => setTelefone(formatBrazilPhone(event.target.value))}
+            placeholder="(11) 99999-9999"
+            required
+            className="px-3 py-2"
+          />
         </label>
         <label className="grid gap-1 text-sm font-medium text-[var(--color-text-primary)]">
           CRM
@@ -227,22 +342,91 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
         <legend className="text-sm font-semibold text-[var(--color-text-primary)]">
           Cirurgias realizadas pela equipe
         </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {procedimentosDisponiveis.map((procedure) => (
-            <label key={procedure.slug} className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm">
-              <input
-                type="checkbox"
-                checked={procedimentosRealizados.includes(procedure.slug)}
-                onChange={(event) => {
-                  if (event.target.checked) {
-                    setProcedimentosRealizados((prev) => [...prev, procedure.slug]);
-                  } else {
-                    setProcedimentosRealizados((prev) => prev.filter((item) => item !== procedure.slug));
-                  }
-                }}
-              />
-              {procedure.nome}
+        <div className="grid gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-3 md:grid-cols-[1fr_1fr_auto]">
+          <label className="grid gap-1 text-xs font-medium text-[var(--color-text-primary)]">
+            Especialidade
+            <select
+              className="px-3 py-2"
+              value={selectedProcedureSpecialty}
+              onChange={(event) => {
+                setSelectedProcedureSpecialty(event.target.value);
+                setProcedureToAdd("");
+                setProcedureSearchTerm("");
+              }}
+            >
+              {specialties.map((specialty) => (
+                <option key={specialty.slug} value={specialty.slug}>
+                  {specialty.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid gap-1">
+            <label className="text-xs font-medium text-[var(--color-text-primary)]">
+              Cirurgia (combobox)
             </label>
+            <input
+              className="px-3 py-2 text-sm"
+              placeholder="Digite para filtrar cirurgia..."
+              value={procedureSearchTerm}
+              onChange={(event) => setProcedureSearchTerm(event.target.value)}
+            />
+            <select
+              className="px-3 py-2 text-sm"
+              value={procedureToAdd}
+              onChange={(event) => setProcedureToAdd(event.target.value)}
+            >
+              <option value="">Selecione uma cirurgia</option>
+              {proceduresBySpecialty.map((procedure) => (
+                <option key={procedure.slug} value={procedure.slug}>
+                  {procedure.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              type="button"
+              className="btn-primary w-full px-3 py-2 text-xs font-semibold md:w-auto"
+              onClick={() => {
+                if (!procedureToAdd) {
+                  return;
+                }
+                setProcedimentosRealizados((prev) =>
+                  prev.includes(procedureToAdd) ? prev : [...prev, procedureToAdd],
+                );
+                setProcedureToAdd("");
+              }}
+            >
+              Adicionar cirurgia
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {selectedProceduresDetails.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-[var(--color-border)] bg-white p-3 text-xs text-[var(--color-text-secondary)] sm:col-span-2">
+              Nenhuma cirurgia adicionada ainda.
+            </p>
+          ) : null}
+          {selectedProceduresDetails.map((procedure) => (
+            <div
+              key={procedure.slug}
+              className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+            >
+              <span>{procedure.nome}</span>
+              <button
+                type="button"
+                className="text-xs font-semibold text-red-700 hover:underline"
+                onClick={() => {
+                  setProcedimentosRealizados((prev) =>
+                    prev.filter((item) => item !== procedure.slug),
+                  );
+                }}
+              >
+                Remover
+              </button>
+            </div>
           ))}
         </div>
       </fieldset>
@@ -258,16 +442,7 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
             onClick={() =>
               setPricingRows((prev) => [
                 ...prev,
-                {
-                  id: crypto.randomUUID(),
-                  especialidadeSlug: specialties[0]?.slug ?? "cirurgia-geral",
-                  procedimentoSlug: "",
-                  cidadeSlug: "",
-                  cidadeNome: "",
-                  uf: "SP",
-                  enderecoProcedimento: "",
-                  valorMedioPacote: "",
-                },
+                newPricingRow(specialties[0]?.slug ?? "cirurgia-geral"),
               ])
             }
           >
@@ -285,7 +460,9 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                 onChange={(event) =>
                   setPricingRows((prev) =>
                     prev.map((item) =>
-                      item.id === row.id ? { ...item, especialidadeSlug: event.target.value } : item,
+                      item.id === row.id
+                        ? { ...item, especialidadeSlug: event.target.value, procedimentoSlug: "" }
+                        : item,
                     ),
                   )
                 }
@@ -339,17 +516,18 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
               />
             </label>
             <label className="grid gap-1 text-xs font-medium text-[var(--color-text-primary)]">
-              Cidade
-              <input
-                value={row.cidadeNome}
+              UF
+              <select
+                value={row.uf}
                 onChange={(event) =>
                   setPricingRows((prev) =>
                     prev.map((item) =>
                       item.id === row.id
                         ? {
                             ...item,
-                            cidadeNome: event.target.value,
-                            cidadeSlug: toSlug(event.target.value),
+                            uf: event.target.value.toUpperCase(),
+                            cidadeSlug: "",
+                            cidadeNome: "",
                           }
                         : item,
                     ),
@@ -357,23 +535,50 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                 }
                 className="px-2 py-2"
                 required
-              />
+              >
+                <option value="">Selecione</option>
+                {(ufs.length ? ufs.map((item) => item.sigla) : ["SP"]).map((uf) => (
+                  <option key={`${row.id}-${uf}`} value={uf}>
+                    {uf}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="grid gap-1 text-xs font-medium text-[var(--color-text-primary)]">
-              UF
-              <input
-                value={row.uf}
-                maxLength={2}
-                onChange={(event) =>
+              Cidade
+              <select
+                value={row.cidadeSlug}
+                onChange={(event) => {
+                  const selectedCity = (citiesByUf[row.uf] ?? []).find(
+                    (city) => city.slug === event.target.value,
+                  );
                   setPricingRows((prev) =>
                     prev.map((item) =>
-                      item.id === row.id ? { ...item, uf: event.target.value.toUpperCase() } : item,
+                      item.id === row.id
+                        ? {
+                            ...item,
+                            cidadeSlug: event.target.value,
+                            cidadeNome: selectedCity?.nome ?? item.cidadeNome,
+                          }
+                        : item,
                     ),
-                  )
-                }
+                  );
+                }}
                 className="px-2 py-2"
                 required
-              />
+              >
+                <option value="">Selecione</option>
+                {(citiesByUf[row.uf] ?? []).map((city) => (
+                  <option key={`${row.id}-${city.slug}`} value={city.slug}>
+                    {city.nome}
+                  </option>
+                ))}
+              </select>
+              {loadingCitiesByUf[row.uf] ? (
+                <span className="text-[10px] text-[var(--color-text-secondary)]">
+                  Carregando cidades...
+                </span>
+              ) : null}
             </label>
             <label className="grid gap-1 text-xs font-medium text-[var(--color-text-primary)]">
               Endereço do procedimento
@@ -404,6 +609,10 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
           </div>
         ))}
       </section>
+
+      {localityMessage ? (
+        <p className="text-xs text-[var(--color-text-secondary)]">{localityMessage}</p>
+      ) : null}
 
       <div className="grid gap-2 md:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-[var(--color-text-primary)]">
