@@ -175,6 +175,9 @@ Cadastre em Settings > Secrets and variables > Actions > Secrets:
 | `JWT_SECRET` | Assinatura de sessão JWT |
 | `BOOTSTRAP_DOCTOR_PASSWORD` | Senha inicial de acesso médico |
 
+> Importante: para o bootstrap funcionar, **BOOTSTRAP_DOCTOR_EMAIL (Variable)** e
+> **BOOTSTRAP_DOCTOR_PASSWORD (Secret)** devem estar ambos definidos e um novo deploy do Cloud Run precisa ser executado.
+
 ---
 
 ## Configurações necessárias no Google Cloud
