@@ -363,7 +363,9 @@ export function HomeSearchForm({ specialties, procedures, cities }: HomeSearchFo
       </div>
 
       {!hasConsent ? (
-        <p className="text-xs text-[var(--color-warning)]">Aceite o modal LGPD para habilitar a busca.</p>
+        <p className="text-xs text-[var(--color-warning)]">
+          Aceite a barra de consentimento LGPD no rodapé para habilitar a busca.
+        </p>
       ) : null}
       {localidadesError ? <p className="text-xs text-[var(--color-text-secondary)]">{localidadesError}</p> : null}
     </form>

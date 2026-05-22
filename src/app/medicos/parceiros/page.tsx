@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
@@ -9,26 +10,35 @@ export default async function MedicosParceirosPage() {
 
   return (
     <main className="grid gap-6">
-      <header className="card grid gap-3 p-6">
-        <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">
-          Faça parte da rede Acesso Cirurgia
-        </h1>
-        <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-          Você não paga nada para se cadastrar. Receba pacientes com triagem inicial estruturada, tenha visibilidade
-          regional e decida, com autonomia clínica, sobre cada caso encaminhado.
-        </p>
+      <header className="card grid gap-4 p-6">
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="grid gap-3">
+            <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              Faça parte da rede Acesso Cirurgia
+            </h1>
+            <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+              Você não paga nada para se cadastrar. Receba pacientes com triagem inicial estruturada, tenha
+              visibilidade regional e decida, com autonomia clínica, sobre cada caso encaminhado.
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-[var(--color-border)]">
+            <Image
+              src="https://storage.googleapis.com/acesso-cirurgia-imagens/medico-1.png"
+              alt="Médico parceiro da rede Acesso Cirurgia"
+              width={1600}
+              height={900}
+              className="h-56 w-full object-cover"
+            />
+          </div>
+        </div>
         <div className="grid gap-2 md:grid-cols-3">
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-3 text-sm text-[var(--color-text-primary)]">
             <p className="font-semibold">Sem custo para o médico</p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Não há taxa para análise do seu cadastro.
-            </p>
+            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Não há taxa para análise do seu cadastro.</p>
           </div>
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-3 text-sm text-[var(--color-text-primary)]">
             <p className="font-semibold">Pacientes pré-triados</p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Encaminhamento com dados clínicos iniciais.
-            </p>
+            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Encaminhamento com dados clínicos iniciais.</p>
           </div>
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-3 text-sm text-[var(--color-text-primary)]">
             <p className="font-semibold">Curadoria Acesso Saúde</p>

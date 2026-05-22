@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   Building2,
@@ -6,9 +7,7 @@ import {
   CircleDollarSign,
   FileLock2,
   Handshake,
-  Hospital,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 
 import { HomeSearchForm } from "@/components/forms/home-search-form";
@@ -51,15 +50,15 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="card flex min-h-80 flex-col items-center justify-center gap-4 border-white/20 bg-white/10 p-6 text-center text-white">
-            <div className="rounded-full border border-white/40 bg-white/15 p-5">
-              <Users size={42} />
-            </div>
-            <p className="max-w-sm text-sm font-semibold">Placeholder de imagem principal (hero)</p>
-            <p className="max-w-sm text-xs text-cyan-100">
-              Inserir foto real de pessoa/família sorrindo em ambiente iluminado, transmitindo alívio e retomada da
-              qualidade de vida (evitar visual hospitalar frio).
-            </p>
+          <div className="card overflow-hidden border-white/20 bg-white/10">
+            <Image
+              src="https://storage.googleapis.com/acesso-cirurgia-imagens/hero-1.png"
+              alt="Família feliz em ambiente iluminado representando alívio após resolver cirurgia"
+              width={1600}
+              height={1000}
+              className="h-full min-h-80 w-full object-cover"
+              priority
+            />
           </div>
         </div>
       </section>
@@ -104,11 +103,14 @@ export default async function Home() {
               Triagem digital humanizada e hospitais parceiros selecionados para garantir que sua única preocupação
               seja a sua recuperação.
             </p>
-            <div className="mt-1 flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background-soft)] p-4 text-center">
-              <Hospital size={24} className="text-[var(--color-primary-blue)]" />
-              <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-                Placeholder: foto da estrutura de hospital parceiro
-              </p>
+            <div className="mt-1 overflow-hidden rounded-xl border border-[var(--color-border)]">
+              <Image
+                src="https://storage.googleapis.com/acesso-cirurgia-imagens/hospital-1.png"
+                alt="Estrutura de hospital parceiro"
+                width={1200}
+                height={900}
+                className="h-40 w-full object-cover"
+              />
             </div>
           </article>
         </div>
@@ -161,14 +163,14 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background-soft)] p-4 text-center">
-            <Users size={28} className="text-[var(--color-primary-blue)]" />
-            <p className="mt-2 text-sm font-semibold text-[var(--color-text-primary)]">
-              Placeholder: equipe médica acolhedora
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Inserir foto da equipe de jaleco transmitindo confiança, acolhimento e profissionalismo.
-            </p>
+          <div className="overflow-hidden rounded-xl border border-[var(--color-border)]">
+            <Image
+              src="https://storage.googleapis.com/acesso-cirurgia-imagens/equipe-1.png"
+              alt="Equipe médica acolhedora transmitindo confiança e profissionalismo"
+              width={1400}
+              height={1000}
+              className="h-56 w-full object-cover"
+            />
           </div>
         </div>
       </section>
