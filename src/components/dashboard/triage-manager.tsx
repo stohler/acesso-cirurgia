@@ -36,8 +36,16 @@ type TriageManagerProps = {
   triagens: TriageRow[];
 };
 
+function sanitizeDoctorName(name: string) {
+  return name
+    .replace(/^dr(a)?\.?\s*/i, "")
+    .replace(/^dr\(\s*a\s*\)\.?\s*/i, "")
+    .trim();
+}
+
 export function TriageManager({ doctorName, triagens }: TriageManagerProps) {
   const router = useRouter();
+  const normalizedDoctorName = sanitizeDoctorName(doctorName);
 
   const [selectedId, setSelectedId] = useState<string>(triagens[0]?.id ?? "");
   const [privateKeyPem, setPrivateKeyPem] = useState("");
@@ -123,7 +131,7 @@ export function TriageManager({ doctorName, triagens }: TriageManagerProps) {
       <header className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <p className="text-sm text-slate-500">Médico autenticado</p>
         <div className="mt-1 flex items-center justify-between gap-2">
-          <h1 className="text-2xl font-semibold text-slate-900">Olá, Dr(a). {doctorName}</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Olá, Dr(a). {normalizedDoctorName || doctorName}</h1>
           <button
             type="button"
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -195,6 +203,9 @@ export function TriageManager({ doctorName, triagens }: TriageManagerProps) {
               value={privateKeyPem}
               onChange={(event) => setPrivateKeyPem(event.target.value)}
             />
+            <span className="text-[11px] font-normal text-slate-500">
+              Dica: em produção, mantenha a chave privada somente em segredo de servidor (`TRIAGE_RSA_PRIVATE_KEY_PEM`).
+            </span>
           </label>
 
           <div className="mt-3 grid gap-2 sm:grid-cols-2">

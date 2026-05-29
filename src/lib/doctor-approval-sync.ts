@@ -16,8 +16,21 @@ type ProcedurePricingItem = {
   valorMedioPacote: number;
 };
 
+type PracticeAddressItem = {
+  uf: string;
+  cidadeSlug: string;
+  cidadeNome: string;
+  enderecoProcedimento: string;
+  procedures: Array<{
+    especialidadeSlug: string;
+    procedimentoSlug: string;
+    valorMedioPacote: number;
+  }>;
+};
+
 type SyncableDoctorApplication = {
   procedurePricing?: ProcedurePricingItem[] | null;
+  practiceAddresses?: PracticeAddressItem[] | null;
 };
 
 function slugToLabel(slug: string) {
@@ -154,7 +167,20 @@ async function recomputePriceEstimate(item: ReturnType<typeof normalizePricingIt
 export async function syncDoctorApplicationApproval(application: SyncableDoctorApplication) {
   await connectToDatabase();
 
-  const pricingRows = (application.procedurePricing ?? []) as ProcedurePricingItem[];
+  const pricingRows =
+    ((application.procedurePricing ?? []) as ProcedurePricingItem[]).length > 0
+      ? ((application.procedurePricing ?? []) as ProcedurePricingItem[])
+      : (((application.practiceAddresses ?? []) as PracticeAddressItem[]).flatMap((address) =>
+          (address.procedures ?? []).map((procedure) => ({
+            especialidadeSlug: procedure.especialidadeSlug,
+            procedimentoSlug: procedure.procedimentoSlug,
+            cidadeSlug: address.cidadeSlug,
+            cidadeNome: address.cidadeNome,
+            uf: address.uf,
+            enderecoProcedimento: address.enderecoProcedimento,
+            valorMedioPacote: procedure.valorMedioPacote,
+          })),
+        ) as ProcedurePricingItem[]);
   const uniqueItems = new Map<string, ReturnType<typeof normalizePricingItem>>();
 
   for (const rawItem of pricingRows) {

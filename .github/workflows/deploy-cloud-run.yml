@@ -85,4 +85,5 @@ jobs:
             --set-env-vars "BOOTSTRAP_DOCTOR_EMAIL=${{ vars.BOOTSTRAP_DOCTOR_EMAIL }}" \
             --set-env-vars "BOOTSTRAP_DOCTOR_PASSWORD=${{ secrets.BOOTSTRAP_DOCTOR_PASSWORD }}" \
             --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}" \
-            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --set-env-vars "TRIAGE_RSA_PRIVATE_KEY_PEM=${{ secrets.TRIAGE_RSA_PRIVATE_KEY_PEM }}"

@@ -176,6 +176,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           procedimentosRealizados: application.procedimentosRealizados,
           certidaoRegularidadeObjectPath: application.certidaoRegularidadeObjectPath,
           fotoObjectPath: application.fotoObjectPath,
+          practiceAddresses: application.practiceAddresses ?? [],
           procedurePricing: application.procedurePricing,
           createdAt: application.createdAt?.toISOString() ?? new Date().toISOString(),
           review: application.review,
