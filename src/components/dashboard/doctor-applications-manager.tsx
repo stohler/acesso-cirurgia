@@ -14,6 +14,17 @@ type DoctorApplicationRow = {
   procedimentosRealizados: string[];
   certidaoRegularidadeObjectPath: string;
   fotoObjectPath?: string;
+  practiceAddresses?: Array<{
+    uf: string;
+    cidadeSlug: string;
+    cidadeNome: string;
+    enderecoProcedimento: string;
+    procedures: Array<{
+      especialidadeSlug: string;
+      procedimentoSlug: string;
+      valorMedioPacote: number;
+    }>;
+  }>;
   procedurePricing: Array<{
     especialidadeSlug: string;
     procedimentoSlug: string;
@@ -32,6 +43,14 @@ type DoctorApplicationRow = {
 type DoctorApplicationsManagerProps = {
   initialApplications: DoctorApplicationRow[];
 };
+
+function humanizeSlug(value: string) {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export function DoctorApplicationsManager({ initialApplications }: DoctorApplicationsManagerProps) {
   const [applications, setApplications] = useState(initialApplications);
@@ -128,17 +147,45 @@ export function DoctorApplicationsManager({ initialApplications }: DoctorApplica
             </div>
 
             <div className="mt-3 grid gap-2">
-              {application.procedurePricing.map((pricing, index) => (
-                <div key={`${application.id}-${pricing.cidadeSlug}-${index}`} className="rounded-lg border border-slate-200 p-2 text-xs text-slate-700">
-                  <p className="font-semibold text-slate-900">
-                    {pricing.especialidadeSlug} / {pricing.procedimentoSlug}
-                  </p>
-                  <p>
-                    {pricing.cidadeNome}-{pricing.uf} • {pricing.enderecoProcedimento}
-                  </p>
-                  <p>Valor médio: R$ {pricing.valorMedioPacote.toLocaleString("pt-BR")}</p>
-                </div>
-              ))}
+              {(application.practiceAddresses && application.practiceAddresses.length > 0
+                ? application.practiceAddresses.map((address, index) => (
+                    <div
+                      key={`${application.id}-address-${address.cidadeSlug}-${index}`}
+                      className="rounded-lg border border-slate-200 p-3 text-xs text-slate-700"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {address.cidadeNome}-{address.uf}
+                      </p>
+                      <p className="mt-1">{address.enderecoProcedimento}</p>
+                      <div className="mt-2 grid gap-1">
+                        {address.procedures.map((procedure, procedureIndex) => (
+                          <div
+                            key={`${application.id}-address-procedure-${procedure.procedimentoSlug}-${procedureIndex}`}
+                            className="rounded-md bg-slate-50 px-2 py-1"
+                          >
+                            <p>
+                              {humanizeSlug(procedure.especialidadeSlug)} / {humanizeSlug(procedure.procedimentoSlug)}
+                            </p>
+                            <p>Valor médio: R$ {procedure.valorMedioPacote.toLocaleString("pt-BR")}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                : application.procedurePricing.map((pricing, index) => (
+                    <div
+                      key={`${application.id}-${pricing.cidadeSlug}-${index}`}
+                      className="rounded-lg border border-slate-200 p-2 text-xs text-slate-700"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {humanizeSlug(pricing.especialidadeSlug)} / {humanizeSlug(pricing.procedimentoSlug)}
+                      </p>
+                      <p>
+                        {pricing.cidadeNome}-{pricing.uf} • {pricing.enderecoProcedimento}
+                      </p>
+                      <p>Valor médio: R$ {pricing.valorMedioPacote.toLocaleString("pt-BR")}</p>
+                    </div>
+                  )))}
             </div>
           </article>
         ))}

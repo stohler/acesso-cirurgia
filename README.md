@@ -174,6 +174,7 @@ Cadastre em Settings > Secrets and variables > Actions > Secrets:
 | `MONGODB_URI` | String de conexão MongoDB Atlas |
 | `JWT_SECRET` | Assinatura de sessão JWT |
 | `BOOTSTRAP_DOCTOR_PASSWORD` | Senha inicial de acesso médico |
+| `TRIAGE_RSA_PRIVATE_KEY_PEM` | Chave privada RSA da triagem (secret; nunca em `vars`) |
 
 > Importante: para o bootstrap funcionar, **BOOTSTRAP_DOCTOR_EMAIL (Variable)** e
 > **BOOTSTRAP_DOCTOR_PASSWORD (Secret)** devem estar ambos definidos e um novo deploy do Cloud Run precisa ser executado.

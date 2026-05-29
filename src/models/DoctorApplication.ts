@@ -13,6 +13,26 @@ const doctorProcedurePricingSchema = new Schema(
   { _id: false },
 );
 
+const doctorPracticeAddressProcedureSchema = new Schema(
+  {
+    especialidadeSlug: { type: String, required: true, index: true },
+    procedimentoSlug: { type: String, required: true, index: true },
+    valorMedioPacote: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
+const doctorPracticeAddressSchema = new Schema(
+  {
+    uf: { type: String, required: true, index: true },
+    cidadeSlug: { type: String, required: true, index: true },
+    cidadeNome: { type: String, required: true },
+    enderecoProcedimento: { type: String, required: true },
+    procedures: { type: [doctorPracticeAddressProcedureSchema], default: [] },
+  },
+  { _id: false },
+);
+
 const doctorApplicationSchema = new Schema(
   {
     nome: { type: String, required: true, index: true },
@@ -25,6 +45,7 @@ const doctorApplicationSchema = new Schema(
     certidaoRegularidadeObjectPath: { type: String, required: true },
     miniBio: { type: String, required: false },
     procedimentosRealizados: [{ type: String, required: true }],
+    practiceAddresses: { type: [doctorPracticeAddressSchema], default: [] },
     procedurePricing: [doctorProcedurePricingSchema],
     status: {
       type: String,

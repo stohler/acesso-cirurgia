@@ -16,8 +16,18 @@ import { PriceDisclaimer } from "@/components/seo/price-disclaimer";
 import { getCatalogData, getFeaturedPriceEstimates } from "@/lib/catalog-service";
 import { formatCurrency } from "@/lib/utils";
 
+function humanizeSlug(value: string) {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export default async function Home() {
   const [catalog, featuredEstimates] = await Promise.all([getCatalogData(), getFeaturedPriceEstimates(6)]);
+  const specialtyNameBySlug = new Map(catalog.specialties.map((item) => [item.slug, item.nome]));
+  const procedureNameBySlug = new Map(catalog.procedures.map((item) => [item.slug, item.nome]));
 
   return (
     <main className="grid gap-8 pb-4">
@@ -25,11 +35,11 @@ export default async function Home() {
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="grid gap-5">
             <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white sm:text-4xl">
-              Recupere sua saúde e qualidade de vida sem esperar anos na fila do SUS.
+              Realize sua cirurgia com segurança, transparência e acompanhamento especializado.
             </h1>
             <p className="max-w-3xl text-sm leading-6 text-cyan-50 sm:text-base">
-              Encontre cirurgias com valores acessíveis, condições facilitadas e hospitais de qualidade perto de você.
-              Faça sua simulação agora e descubra que operar no particular é possível.
+              Conectamos você a médicos, hospitais e equipes cirúrgicas qualificadas, com atendimento humanizado do
+              orçamento ao pós-operatório.
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <a href="#simulador" className="btn-primary px-5 py-3 font-semibold">
@@ -121,9 +131,11 @@ export default async function Home() {
           {featuredEstimates.map((estimate) => (
             <article key={`${estimate.procedimentoSlug}-${estimate.cidadeSlug}`} className="card p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary-blue-light)]">
-                {estimate.especialidadeSlug}
+                {specialtyNameBySlug.get(estimate.especialidadeSlug) ?? humanizeSlug(estimate.especialidadeSlug)}
               </p>
-              <h3 className="mt-1 text-lg font-semibold">{estimate.procedimentoSlug.replace(/-/g, " ")}</h3>
+              <h3 className="mt-1 text-lg font-semibold">
+                {procedureNameBySlug.get(estimate.procedimentoSlug) ?? humanizeSlug(estimate.procedimentoSlug)}
+              </h3>
               <p className="text-sm text-[var(--color-text-secondary)]">
                 {estimate.cidadeNome} - {estimate.uf}
               </p>
@@ -136,6 +148,53 @@ export default async function Home() {
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="card grid gap-5 p-6">
+        <div>
+          <h2 className="text-2xl font-semibold">Por que confiar?</h2>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Por que pacientes escolhem nossa equipe?</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {[
+            "Atendimento humanizado em todas as etapas",
+            "Médicos e hospitais criteriosamente selecionados",
+            "Transparência nos custos e no processo cirúrgico",
+            "Acompanhamento pré e pós-operatório",
+            "Segurança de dados e conformidade com a LGPD",
+            "Suporte rápido via WhatsApp",
+          ].map((item) => (
+            <div
+              key={item}
+              className="inline-flex items-start gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] px-3 py-3 text-sm text-[var(--color-text-primary)]"
+            >
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[var(--color-success)]" />
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="card grid gap-5 p-6">
+        <h2 className="text-2xl font-semibold">Nossa experiência</h2>
+        <div className="grid gap-3 md:grid-cols-3">
+          <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4">
+            <p className="text-3xl font-bold text-[var(--color-primary-blue)]">+1.200</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">pacientes atendidos</p>
+          </article>
+          <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4">
+            <p className="text-3xl font-bold text-[var(--color-primary-blue)]">Rede ativa</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+              com médicos e hospitais parceiros
+            </p>
+          </article>
+          <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4">
+            <p className="text-3xl font-bold text-[var(--color-primary-blue)]">Multiespecialidades</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+              atendimento em múltiplas especialidades
+            </p>
+          </article>
         </div>
       </section>
 
@@ -171,6 +230,12 @@ export default async function Home() {
               className="h-56 w-full object-cover"
             />
           </div>
+        </div>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4">
+          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Responsabilidade médica</h3>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Todos os procedimentos são realizados por médicos regularmente inscritos no CRM e em hospitais parceiros.
+          </p>
         </div>
       </section>
 

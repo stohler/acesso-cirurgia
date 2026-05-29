@@ -53,6 +53,17 @@ export async function PATCH(
         enderecoProcedimento: string;
         valorMedioPacote: number;
       }>,
+      practiceAddresses: (updated.practiceAddresses ?? []) as Array<{
+        uf: string;
+        cidadeSlug: string;
+        cidadeNome: string;
+        enderecoProcedimento: string;
+        procedures: Array<{
+          especialidadeSlug: string;
+          procedimentoSlug: string;
+          valorMedioPacote: number;
+        }>;
+      }>,
     });
 
     return NextResponse.json({
