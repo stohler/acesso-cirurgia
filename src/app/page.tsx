@@ -68,7 +68,7 @@ export default async function Home() {
               alt="Família feliz em ambiente iluminado representando alívio após resolver cirurgia"
               width={1600}
               height={1000}
-              className="h-full min-h-80 w-full object-cover"
+              className="h-auto max-h-[520px] w-full object-contain"
               priority
             />
           </div>
