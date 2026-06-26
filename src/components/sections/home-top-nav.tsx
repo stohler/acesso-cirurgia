@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -23,8 +24,16 @@ export function HomeTopNav({ homePathPrefix = "" }: HomeTopNavProps) {
   return (
     <header className="sticky top-0 z-40 rounded-2xl border border-[var(--color-border)] bg-white/95 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
       <div className="flex items-center justify-between gap-4">
-        <a href={brandHref} className="text-sm font-semibold text-[var(--color-primary-blue)]">
-          AgendeSuaCirurgia.com.br
+        <a href={brandHref} className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-primary-blue)]">
+          <Image
+            src="https://storage.googleapis.com/acesso-cirurgia-imagens/logo.png"
+            alt="Logo Agende Sua Cirurgia"
+            width={170}
+            height={36}
+            className="h-8 w-auto object-contain sm:h-9"
+            priority
+          />
+          <span className="hidden sm:inline">AgendeSuaCirurgia.com.br</span>
         </a>
 
         <button

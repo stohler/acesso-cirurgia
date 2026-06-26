@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   description:
     "Plataforma para estimativa de valores cirúrgicos por cidade, triagem criptografada e gestão médica por região.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  icons: {
+    icon: "https://storage.googleapis.com/acesso-cirurgia-imagens/favicon.png",
+    shortcut: "https://storage.googleapis.com/acesso-cirurgia-imagens/favicon.png",
+    apple: "https://storage.googleapis.com/acesso-cirurgia-imagens/favicon.png",
+  },
 };
 
 export default async function RootLayout({
