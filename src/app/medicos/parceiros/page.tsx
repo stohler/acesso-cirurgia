@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
 import { DoctorPartnerForm } from "@/components/forms/doctor-partner-form";
@@ -47,9 +46,6 @@ export default async function MedicosParceirosPage() {
             </p>
           </div>
         </div>
-        <Link href="/" className="text-sm font-semibold text-[var(--color-primary-blue-light)] hover:underline">
-          Voltar para página principal
-        </Link>
       </header>
 
       <section className="card grid gap-3 p-6">

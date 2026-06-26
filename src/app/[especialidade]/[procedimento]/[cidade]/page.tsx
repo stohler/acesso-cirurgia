@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 
 function formatSlug(value: string) {
   return value
-    .split("-")
+    .split(/[-_]/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");

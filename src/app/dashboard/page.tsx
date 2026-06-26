@@ -1,12 +1,17 @@
 import { redirect } from "next/navigation";
 
+import { CatalogAdminManager } from "@/components/dashboard/catalog-admin-manager";
 import { DoctorApplicationsManager } from "@/components/dashboard/doctor-applications-manager";
 import { SearchStatsPanel } from "@/components/dashboard/search-stats-panel";
 import { TriageManager } from "@/components/dashboard/triage-manager";
 import { getSession } from "@/lib/auth";
+import { ensureInitialCatalogSeed } from "@/lib/default-catalog-seed";
 import { connectToDatabase } from "@/lib/mongodb";
+import { isSuperAdminEmail } from "@/lib/superadmin";
 import { DoctorApplicationModel } from "@/models/DoctorApplication";
+import { ProcedureModel } from "@/models/Procedure";
 import { SearchEventModel } from "@/models/SearchEvent";
+import { SpecialtyModel } from "@/models/Specialty";
 import { TriageModel } from "@/models/Triage";
 
 type DashboardPageProps = {
@@ -27,6 +32,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const filters = await searchParams;
 
   await connectToDatabase();
+  await ensureInitialCatalogSeed();
+  const isSuperAdmin = isSuperAdminEmail(session.email);
 
   const query: Record<string, string> = {};
   if (filters.especialidade) {
@@ -47,6 +54,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     withoutPriceEstimate,
     topCitiesRaw,
     topProceduresRaw,
+    adminSpecialties,
+    adminProcedures,
   ] = await Promise.all([
     DoctorApplicationModel.find({}).sort({ createdAt: -1 }).limit(120).lean(),
     SearchEventModel.countDocuments(),
@@ -75,6 +84,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       { $sort: { total: -1 } },
       { $limit: 5 },
     ]),
+    isSuperAdmin ? SpecialtyModel.find({}).sort({ nome: 1 }).lean() : Promise.resolve([]),
+    isSuperAdmin ? ProcedureModel.find({}).sort({ nome: 1 }).lean() : Promise.resolve([]),
   ]);
 
   const topCities = (topCitiesRaw as Array<{ _id?: { cidadeNome?: string; uf?: string }; total: number }>).map(
@@ -86,7 +97,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const topProcedures = (
     topProceduresRaw as Array<{ _id?: string; total: number }>
   ).map((item) => ({
-    label: (item._id ?? "procedimento").replace(/-/g, " "),
+    label: (item._id ?? "procedimento").replace(/[-_]/g, " "),
     total: item.total,
   }));
 
@@ -190,6 +201,39 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         topCities={topCities}
         topProcedures={topProcedures}
       />
+
+      {isSuperAdmin ? (
+        <CatalogAdminManager
+          initialSpecialties={(adminSpecialties as Array<{
+            _id: unknown;
+            slug: string;
+            nome: string;
+            descricao: string;
+            active: boolean;
+          }>).map((specialty) => ({
+            id: String(specialty._id),
+            slug: specialty.slug,
+            nome: specialty.nome,
+            descricao: specialty.descricao,
+            active: specialty.active,
+          }))}
+          initialProcedures={(adminProcedures as Array<{
+            _id: unknown;
+            slug: string;
+            especialidadeSlug: string;
+            nome: string;
+            descricao: string;
+            active: boolean;
+          }>).map((procedure) => ({
+            id: String(procedure._id),
+            slug: procedure.slug,
+            especialidadeSlug: procedure.especialidadeSlug,
+            nome: procedure.nome,
+            descricao: procedure.descricao,
+            active: procedure.active,
+          }))}
+        />
+      ) : null}
     </main>
   );
 }

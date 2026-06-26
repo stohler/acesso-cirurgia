@@ -19,8 +19,7 @@ type PracticeAddressFormRow = {
   cidadeNome: string;
   enderecoProcedimento: string;
   selectedSpecialtySlug: string;
-  procedureSearchTerm: string;
-  procedureToAdd: string;
+  procedureComboboxValue: string;
   procedures: AddressProcedureFormRow[];
 };
 
@@ -41,7 +40,7 @@ type CityOption = {
 
 function slugToLabel(value: string) {
   return value
-    .split("-")
+    .split(/[-_]/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
@@ -55,8 +54,7 @@ function newPracticeAddress(defaultSpecialtySlug: string): PracticeAddressFormRo
     cidadeNome: "",
     enderecoProcedimento: "",
     selectedSpecialtySlug: defaultSpecialtySlug,
-    procedureSearchTerm: "",
-    procedureToAdd: "",
+    procedureComboboxValue: "",
     procedures: [],
   };
 }
@@ -128,6 +126,12 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
       ),
     [practiceAddresses],
   );
+
+  function updateAddress(addressId: string, updater: (address: PracticeAddressFormRow) => PracticeAddressFormRow) {
+    setPracticeAddresses((prev) =>
+      prev.map((address) => (address.id === addressId ? updater(address) : address)),
+    );
+  }
 
   const loadCitiesByUf = useCallback(async (uf: string) => {
     const normalizedUf = uf.toUpperCase();
@@ -387,7 +391,7 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
             onClick={() =>
               setPracticeAddresses((prev) => [
                 ...prev,
-                  newPracticeAddress(defaultSpecialtySlug),
+                newPracticeAddress(defaultSpecialtySlug),
               ])
             }
           >
@@ -399,11 +403,12 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
         {practiceAddresses.map((address, addressIndex) => {
           const procedureOptions = procedures
             .filter((procedure) => procedure.especialidadeSlug === address.selectedSpecialtySlug)
-            .filter((procedure) =>
-              address.procedureSearchTerm
-                ? procedure.nome.toLowerCase().includes(address.procedureSearchTerm.toLowerCase().trim())
-                : true,
-            );
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+          const comboboxNormalized = address.procedureComboboxValue.trim().toLowerCase();
+          const matchedProcedure = procedureOptions.find(
+            (procedure) =>
+              procedure.nome.toLowerCase() === comboboxNormalized || procedure.slug.toLowerCase() === comboboxNormalized,
+          );
 
           return (
             <div key={address.id} className="grid gap-3 rounded-xl border border-[var(--color-border)] bg-white p-3">
@@ -413,9 +418,7 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                 </h4>
                 <button
                   type="button"
-                  onClick={() =>
-                    setPracticeAddresses((prev) => prev.filter((item) => item.id !== address.id))
-                  }
+                  onClick={() => setPracticeAddresses((prev) => prev.filter((item) => item.id !== address.id))}
                   disabled={practiceAddresses.length === 1}
                   className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
@@ -429,20 +432,15 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                   UF
                   <select
                     value={address.uf}
-                    onChange={(event) =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? {
-                                ...item,
-                                uf: event.target.value.toUpperCase(),
-                                cidadeSlug: "",
-                                cidadeNome: "",
-                              }
-                            : item,
-                        ),
-                      )
-                    }
+                    onChange={(event) => {
+                      const nextUf = event.target.value.toUpperCase();
+                      updateAddress(address.id, (current) => ({
+                        ...current,
+                        uf: nextUf,
+                        cidadeSlug: "",
+                        cidadeNome: "",
+                      }));
+                    }}
                     className="px-2 py-2"
                     required
                   >
@@ -463,17 +461,11 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                       const selectedCity = (citiesByUf[address.uf] ?? []).find(
                         (city) => city.slug === event.target.value,
                       );
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? {
-                                ...item,
-                                cidadeSlug: event.target.value,
-                                cidadeNome: selectedCity?.nome ?? item.cidadeNome,
-                              }
-                            : item,
-                        ),
-                      );
+                      updateAddress(address.id, (current) => ({
+                        ...current,
+                        cidadeSlug: event.target.value,
+                        cidadeNome: selectedCity?.nome ?? current.cidadeNome,
+                      }));
                     }}
                     className="px-2 py-2"
                     required
@@ -497,13 +489,10 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                   <input
                     value={address.enderecoProcedimento}
                     onChange={(event) =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? { ...item, enderecoProcedimento: event.target.value }
-                            : item,
-                        ),
-                      )
+                      updateAddress(address.id, (current) => ({
+                        ...current,
+                        enderecoProcedimento: event.target.value,
+                      }))
                     }
                     className="px-2 py-2"
                     placeholder="Hospital/Clínica, rua, número"
@@ -518,18 +507,11 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                   <select
                     value={address.selectedSpecialtySlug}
                     onChange={(event) =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? {
-                                ...item,
-                                selectedSpecialtySlug: event.target.value,
-                                procedureSearchTerm: "",
-                                procedureToAdd: "",
-                              }
-                            : item,
-                        ),
-                      )
+                      updateAddress(address.id, (current) => ({
+                        ...current,
+                        selectedSpecialtySlug: event.target.value,
+                        procedureComboboxValue: "",
+                      }))
                     }
                     className="px-2 py-2"
                   >
@@ -543,76 +525,63 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
 
                 <div className="grid gap-1">
                   <label className="text-xs font-medium text-[var(--color-text-primary)]">
-                    Procedimento (combobox)
+                    Procedimento (combobox único)
                   </label>
                   <input
                     className="px-2 py-2 text-sm"
-                    placeholder="Digite para filtrar cirurgia..."
-                    value={address.procedureSearchTerm}
+                    list={`procedure-options-${address.id}`}
+                    placeholder="Digite ou selecione o procedimento"
+                    value={address.procedureComboboxValue}
                     onChange={(event) =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? { ...item, procedureSearchTerm: event.target.value }
-                            : item,
-                        ),
-                      )
+                      updateAddress(address.id, (current) => ({
+                        ...current,
+                        procedureComboboxValue: event.target.value,
+                      }))
                     }
                   />
-                  <select
-                    className="px-2 py-2 text-sm"
-                    value={address.procedureToAdd}
-                    onChange={(event) =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) =>
-                          item.id === address.id
-                            ? { ...item, procedureToAdd: event.target.value }
-                            : item,
-                        ),
-                      )
-                    }
-                  >
-                    <option value="">Selecione um procedimento</option>
+                  <datalist id={`procedure-options-${address.id}`}>
                     {procedureOptions.map((procedure) => (
-                      <option key={`${address.id}-procedure-${procedure.slug}`} value={procedure.slug}>
-                        {procedure.nome}
-                      </option>
+                      <option key={`${address.id}-procedure-${procedure.slug}`} value={procedure.nome} />
                     ))}
-                  </select>
+                  </datalist>
+                  <span className="text-[10px] text-[var(--color-text-secondary)]">
+                    Se preferir, você também pode digitar o slug técnico do procedimento.
+                  </span>
                 </div>
 
                 <div className="flex items-end">
                   <button
                     type="button"
                     className="btn-primary w-full px-3 py-2 text-xs font-semibold md:w-auto"
-                    onClick={() =>
-                      setPracticeAddresses((prev) =>
-                        prev.map((item) => {
-                          if (item.id !== address.id || !item.procedureToAdd) {
-                            return item;
-                          }
+                    onClick={() => {
+                      if (!matchedProcedure) {
+                        setStatus("Selecione um procedimento válido no combobox antes de adicionar.");
+                        return;
+                      }
 
-                          if (item.procedures.some((procedure) => procedure.procedimentoSlug === item.procedureToAdd)) {
-                            return { ...item, procedureToAdd: "" };
-                          }
-
+                      updateAddress(address.id, (current) => {
+                        if (current.procedures.some((procedure) => procedure.procedimentoSlug === matchedProcedure.slug)) {
                           return {
-                            ...item,
-                            procedures: [
-                              ...item.procedures,
-                              {
-                                id: crypto.randomUUID(),
-                                especialidadeSlug: item.selectedSpecialtySlug,
-                                procedimentoSlug: item.procedureToAdd,
-                                valorMedioPacote: "",
-                              },
-                            ],
-                            procedureToAdd: "",
-                              procedureSearchTerm: "",
+                            ...current,
+                            procedureComboboxValue: "",
                           };
-                        }),
-                      )
-                    }
+                        }
+
+                        return {
+                          ...current,
+                          procedures: [
+                            ...current.procedures,
+                            {
+                              id: crypto.randomUUID(),
+                              especialidadeSlug: current.selectedSpecialtySlug,
+                              procedimentoSlug: matchedProcedure.slug,
+                              valorMedioPacote: "",
+                            },
+                          ],
+                          procedureComboboxValue: "",
+                        };
+                      });
+                    }}
                   >
                     Adicionar procedimento
                   </button>
@@ -646,20 +615,14 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                         step="1"
                         value={procedure.valorMedioPacote}
                         onChange={(event) =>
-                          setPracticeAddresses((prev) =>
-                            prev.map((item) =>
-                              item.id !== address.id
-                                ? item
-                                : {
-                                    ...item,
-                                    procedures: item.procedures.map((itemProcedure) =>
-                                      itemProcedure.id === procedure.id
-                                        ? { ...itemProcedure, valorMedioPacote: event.target.value }
-                                        : itemProcedure,
-                                    ),
-                                  },
+                          updateAddress(address.id, (current) => ({
+                            ...current,
+                            procedures: current.procedures.map((itemProcedure) =>
+                              itemProcedure.id === procedure.id
+                                ? { ...itemProcedure, valorMedioPacote: event.target.value }
+                                : itemProcedure,
                             ),
-                          )
+                          }))
                         }
                         className="px-2 py-2"
                         required
@@ -670,18 +633,10 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
                         type="button"
                         className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
                         onClick={() =>
-                          setPracticeAddresses((prev) =>
-                            prev.map((item) =>
-                              item.id !== address.id
-                                ? item
-                                : {
-                                    ...item,
-                                    procedures: item.procedures.filter(
-                                      (itemProcedure) => itemProcedure.id !== procedure.id,
-                                    ),
-                                  },
-                            ),
-                          )
+                          updateAddress(address.id, (current) => ({
+                            ...current,
+                            procedures: current.procedures.filter((itemProcedure) => itemProcedure.id !== procedure.id),
+                          }))
                         }
                       >
                         <Trash2 size={12} />

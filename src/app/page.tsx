@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { HomeSearchForm } from "@/components/forms/home-search-form";
+import { HomeTopNav } from "@/components/sections/home-top-nav";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { PriceDisclaimer } from "@/components/seo/price-disclaimer";
 import { getCatalogData, getFeaturedPriceEstimates } from "@/lib/catalog-service";
@@ -18,7 +19,7 @@ import { formatCurrency } from "@/lib/utils";
 
 function humanizeSlug(value: string) {
   return value
-    .split("-")
+    .split(/[-_]/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
@@ -31,7 +32,9 @@ export default async function Home() {
 
   return (
     <main className="grid gap-8 pb-4">
-      <section className="hero overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
+      <HomeTopNav />
+
+      <section id="inicio" className="hero scroll-mt-24 overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="grid gap-5">
             <h1 className="max-w-4xl text-3xl font-bold leading-tight text-white sm:text-4xl">
@@ -72,7 +75,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4">
+      <section id="beneficios" className="scroll-mt-24 grid gap-4">
         <h2 className="text-center text-2xl font-semibold">Por que milhares de pacientes estão buscando alternativas ao SUS?</h2>
         <div className="grid gap-3 md:grid-cols-3">
           <article className="card grid gap-3 p-5">
@@ -125,7 +128,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4">
+      <section id="destaques" className="scroll-mt-24 grid gap-4">
         <h2 className="text-xl font-semibold">Faixas estimadas em destaque</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {featuredEstimates.map((estimate) => (
@@ -151,7 +154,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="card grid gap-5 p-6">
+      <section id="confiar" className="card scroll-mt-24 grid gap-5 p-6">
         <div>
           <h2 className="text-2xl font-semibold">Por que confiar?</h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Por que pacientes escolhem nossa equipe?</p>
@@ -176,7 +179,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="card grid gap-5 p-6">
+      <section id="experiencia" className="card scroll-mt-24 grid gap-5 p-6">
         <h2 className="text-2xl font-semibold">Nossa experiência</h2>
         <div className="grid gap-3 md:grid-cols-3">
           <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4">
@@ -200,7 +203,7 @@ export default async function Home() {
 
       <TestimonialsCarousel />
 
-      <section className="card grid gap-5 p-6">
+      <section id="seguranca" className="card scroll-mt-24 grid gap-5 p-6">
         <h2 className="text-2xl font-semibold">Seus dados protegidos, sua saúde em boas mãos.</h2>
         <div className="grid gap-5 lg:grid-cols-[1fr_0.95fr]">
           <div className="grid gap-4">
@@ -239,7 +242,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4">
+      <section id="faq" className="scroll-mt-24 grid gap-4">
         <h2 className="text-2xl font-semibold">Perguntas frequentes</h2>
         <div className="grid gap-3">
           <article className="card p-4">

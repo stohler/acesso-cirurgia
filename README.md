@@ -18,8 +18,10 @@ O projeto já nasce com foco em **Cirurgia Geral**, porém com schema e arquitet
 - **Criptografia ponta a ponta (E2E)** para dados sensíveis e anexos:
   - Criptografia local no navegador (AES-256-GCM)
   - Chave simétrica protegida com RSA-OAEP-256
-- **Modal de consentimento LGPD obrigatório** antes da coleta de dados.
+- **Barra de consentimento LGPD obrigatória** antes da coleta de dados (persistida em cookie).
 - **Dashboard médico autenticado** para visualizar triagens por especialidade/região e descriptografar localmente.
+- **Seed inicial de catálogo** com especialidades e procedimentos padrão (cirurgia geral, ginecologia e ortopedia).
+- **Área de superadmin com CRUD** para especialidades e procedimentos padrão.
 - **Conexão Mongoose com suporte a transações** (`withMongoTransaction`).
 - **Dockerfile otimizado para Cloud Run** (build multi-stage + standalone).
 - **Workflow GitHub Actions** para CI + deploy Cloud Run.
@@ -164,6 +166,7 @@ Cadastre no repositório (Settings > Secrets and variables > Actions > Variables
 | `GCS_BUCKET_NAME` | Bucket de anexos criptografados |
 | `BOOTSTRAP_DOCTOR_NOME` | Nome inicial de médico bootstrap |
 | `BOOTSTRAP_DOCTOR_EMAIL` | E-mail inicial de médico bootstrap |
+| `SUPERADMIN_EMAILS` | Lista de e-mails (separados por vírgula) com acesso ao CRUD de catálogo |
 
 ### 2) GitHub Action Secrets (`secrets`) – SENSÍVEIS
 
@@ -213,6 +216,7 @@ Cadastre em Settings > Secrets and variables > Actions > Secrets:
 ## Observações operacionais
 
 - `BOOTSTRAP_DOCTOR_*` cria automaticamente um médico inicial no primeiro login.
+- `SUPERADMIN_EMAILS` controla quem pode acessar o CRUD de especialidades e procedimentos no dashboard.
 - Para produção, use rotação de credenciais e gestão de segredo apropriada.
 - Em Cloud Run, preferencialmente use service account da plataforma para acesso GCP.
 
@@ -231,7 +235,6 @@ npm run start
 
 ## Próximas evoluções sugeridas
 
-- Painel administrativo para CRUD de especialidades/procedimentos/cidades/preços.
 - Versionamento de tabela de preços por região e convênio.
 - Auditoria LGPD e trilha de consentimento com versionamento de termos.
 - Fila assíncrona para validação e classificação automatizada de triagens.

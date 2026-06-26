@@ -1,4 +1,5 @@
 import { DEFAULT_CITIES, DEFAULT_PRICE_ESTIMATES, DEFAULT_PROCEDURES, DEFAULT_SPECIALTIES } from "@/lib/constants";
+import { ensureInitialCatalogSeed } from "@/lib/default-catalog-seed";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CityModel } from "@/models/City";
 import { PriceEstimateModel } from "@/models/PriceEstimate";
@@ -8,11 +9,12 @@ import { SpecialtyModel } from "@/models/Specialty";
 export async function getCatalogData() {
   try {
     await connectToDatabase();
+    await ensureInitialCatalogSeed();
 
     const [specialties, procedures, cities] = await Promise.all([
-      SpecialtyModel.find({ active: true }).lean(),
-      ProcedureModel.find({ active: true }).lean(),
-      CityModel.find({ active: true }).lean(),
+      SpecialtyModel.find({ active: true }).sort({ nome: 1 }).lean(),
+      ProcedureModel.find({ active: true }).sort({ nome: 1 }).lean(),
+      CityModel.find({ active: true }).sort({ nome: 1 }).lean(),
     ]);
 
     return {
