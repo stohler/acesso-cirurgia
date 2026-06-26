@@ -2,6 +2,7 @@ import Image from "next/image";
 import { CheckCircle2 } from "lucide-react";
 
 import { DoctorPartnerForm } from "@/components/forms/doctor-partner-form";
+import { HomeTopNav } from "@/components/sections/home-top-nav";
 import { getCatalogData } from "@/lib/catalog-service";
 
 export default async function MedicosParceirosPage() {
@@ -9,6 +10,8 @@ export default async function MedicosParceirosPage() {
 
   return (
     <main className="grid gap-6">
+      <HomeTopNav homePathPrefix="/" />
+
       <header className="card grid gap-4 p-6">
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="grid gap-3">

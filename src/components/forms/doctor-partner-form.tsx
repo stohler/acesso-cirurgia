@@ -525,7 +525,7 @@ export function DoctorPartnerForm({ specialties, procedures }: DoctorPartnerForm
 
                 <div className="grid gap-1">
                   <label className="text-xs font-medium text-[var(--color-text-primary)]">
-                    Procedimento (combobox único)
+                    Procedimento
                   </label>
                   <input
                     className="px-2 py-2 text-sm"

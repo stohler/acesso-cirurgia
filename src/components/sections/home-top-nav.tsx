@@ -12,13 +12,18 @@ const navItems = [
   { href: "#faq", label: "FAQ" },
 ];
 
-export function HomeTopNav() {
+type HomeTopNavProps = {
+  homePathPrefix?: string;
+};
+
+export function HomeTopNav({ homePathPrefix = "" }: HomeTopNavProps) {
   const [open, setOpen] = useState(false);
+  const brandHref = homePathPrefix ? "/" : "#inicio";
 
   return (
     <header className="sticky top-0 z-40 rounded-2xl border border-[var(--color-border)] bg-white/95 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
       <div className="flex items-center justify-between gap-4">
-        <a href="#inicio" className="text-sm font-semibold text-[var(--color-primary-blue)]">
+        <a href={brandHref} className="text-sm font-semibold text-[var(--color-primary-blue)]">
           AgendeSuaCirurgia.com.br
         </a>
 
@@ -33,7 +38,11 @@ export function HomeTopNav() {
 
         <nav className="hidden items-center gap-4 text-sm md:flex">
           {navItems.map((item) => (
-            <a key={item.href} href={item.href} className="font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary-blue)]">
+            <a
+              key={item.href}
+              href={`${homePathPrefix}${item.href}`}
+              className="font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary-blue)]"
+            >
               {item.label}
             </a>
           ))}
@@ -48,7 +57,7 @@ export function HomeTopNav() {
           {navItems.map((item) => (
             <a
               key={item.href}
-              href={item.href}
+              href={`${homePathPrefix}${item.href}`}
               className="rounded-lg px-2 py-2 text-[var(--color-text-primary)] hover:bg-[var(--color-background-soft)]"
               onClick={() => setOpen(false)}
             >
